@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ddd-fastapi-auth"
+version = "0.1.0"
+description = ""
+authors = ["Alexey Volkov <vollkovalex1991@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0"
+sqlalchemy = "^2.0.30"
+asyncpg = "^0.29.0"
+pre-commit = "^3.7.0"
+uvicorn = {extras = ["all"], version = "^0.29.0"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
