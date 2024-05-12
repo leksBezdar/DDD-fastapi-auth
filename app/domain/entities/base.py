@@ -1,12 +1,12 @@
 from abc import ABC
 from dataclasses import dataclass, field
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 
 @dataclass
 class BaseEntity(ABC):
-    oid: UUID = field(
-        default_factory=uuid4(),
+    oid: str = field(
+        default_factory=lambda: str(uuid4()),
         kw_only=True,
     )
 

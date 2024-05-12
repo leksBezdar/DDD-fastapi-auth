@@ -9,6 +9,6 @@ from domain.values.users import Username
 class User(BaseEntity):
     username: Username
     created_at: datetime = field(
-        default_factory=datetime.now(),
+        default_factory=datetime.now,
         kw_only=True,
     )
