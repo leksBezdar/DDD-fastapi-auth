@@ -14,8 +14,21 @@ class UsernameTooLong(ApplicationException):
 
 @dataclass(eq=False)
 class EmptyUsername(ApplicationException):
-    username_value: str
+    @property
+    def message(self):
+        return "Username is empty"
+
+
+class EmptyGroupTitle(ApplicationException):
+    @property
+    def message(self):
+        return "Group title is empty"
+
+
+@dataclass(eq=False)
+class GroupTitleTooLong(ApplicationException):
+    title: str
 
     @property
     def message(self):
-        return f"Username is empty: {self.username_value}"
+        return f"Group title is too long: {self.title}"
