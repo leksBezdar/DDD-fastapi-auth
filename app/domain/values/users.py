@@ -50,8 +50,11 @@ class Password(BaseValueObject):
         if not self.value:
             raise EmptyPassword()
 
-        if 3 <= len(self.value) <= 15:
+        if 3 >= len(self.value) >= 15:
             raise PasswordLengthIsNotValid(self.value)
+
+    def as_generic_type(self):
+        return str(self.value)
 
 
 @dataclass(frozen=True)
