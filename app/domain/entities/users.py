@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 
 from domain.entities.base import BaseEntity
-from domain.values.users import Title, Username
+from domain.values.users import Title, Username, Email, Password
 
 
 @dataclass(eq=False)
 class User(BaseEntity):
+    email: Email
     username: Username
+    password: Password
 
 
 @dataclass(eq=False)
