@@ -1,13 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass, field
 
 from domain.entities.users import UserGroup
-
-
-@dataclass(frozen=True)
-class BaseGroupRepository(ABC):
-    @abstractmethod
-    def check_group_exists_by_title(self, title: str) -> bool: ...
 
 
 @dataclass
@@ -21,3 +15,6 @@ class FakeGroupRepository(ABC):
             )
         except StopIteration:
             return False
+
+    def add_group(self, group: UserGroup) -> None:
+        self._saved_groups.append(group)
