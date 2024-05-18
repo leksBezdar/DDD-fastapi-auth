@@ -8,7 +8,7 @@ from domain.exceptions.users import (
     EmptyUsername,
     GroupTitleTooLong,
     PasswordLengthIsNotValid,
-    UsernameTooLong,
+    UsernameLengthIsNotValid,
 )
 from domain.values.base import BaseValueObject
 
@@ -17,14 +17,16 @@ from domain.values.base import BaseValueObject
 class Username(BaseValueObject):
     value: str
 
-    def validate(self):
+    def validate(self) -> None:
         if not self.value:
             raise EmptyUsername()
 
-        if len(self.value) > 15:
-            raise UsernameTooLong(self.value)
+        value_length = len(self.value)
 
-    def as_generic_type(self):
+        if value_length not in range(3, 16):
+            raise UsernameLengthIsNotValid(self.value)
+
+    def as_generic_type(self) -> str:
         return str(self.value)
 
 
@@ -50,7 +52,9 @@ class Password(BaseValueObject):
         if not self.value:
             raise EmptyPassword()
 
-        if 3 >= len(self.value) >= 15:
+        value_length = len(self.value)
+
+        if value_length not in range(3, 16):
             raise PasswordLengthIsNotValid(self.value)
 
     def as_generic_type(self):
