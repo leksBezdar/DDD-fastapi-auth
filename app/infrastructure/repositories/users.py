@@ -8,10 +8,14 @@ from domain.entities.users import UserGroup
 class FakeGroupRepository(ABC):
     _saved_groups: list[UserGroup] = field(default_factory=list, kw_only=True)
 
-    def check_group_exists_by_title(self, title: str) -> bool:
+    async def check_group_exists_by_title(self, title: str) -> bool:
         try:
             return bool(
-                next(group for group in self._saved_groups if group.title == title)
+                next(
+                    group
+                    for group in self._saved_groups
+                    if group.title.as_generic_type() == title
+                )
             )
         except StopIteration:
             return False

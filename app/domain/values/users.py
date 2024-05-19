@@ -6,7 +6,7 @@ from domain.exceptions.users import (
     EmptyGroupTitle,
     EmptyPassword,
     EmptyUsername,
-    GroupTitleTooLong,
+    GroupTitleLengthIsNotValid,
     PasswordLengthIsNotValid,
     UsernameLengthIsNotValid,
 )
@@ -69,5 +69,8 @@ class Title(BaseValueObject):
         if not self.value:
             raise EmptyGroupTitle()
 
-        if len(self.value) > 15:
-            raise GroupTitleTooLong(self.value)
+        if len(self.value) not in range(3, 16):
+            raise GroupTitleLengthIsNotValid(self.value)
+
+    def as_generic_type(self):
+        return str(self.value)

@@ -5,9 +5,9 @@ from domain.events.base import BaseEvent
 
 @dataclass
 class UserAddedToGroupEvent(BaseEvent):
-    group_oid: str
     username: str
     user_oid: str
+    group_oid: str
 
 
 @dataclass

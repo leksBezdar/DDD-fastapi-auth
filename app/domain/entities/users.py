@@ -31,5 +31,10 @@ class UserGroup(BaseEntity):
     def create_group(cls, title: Title) -> "UserGroup":
         new_group = cls(title=title)
         new_group.register_event(
-            NewGroupCreated(group_oid=cls.oid, group_title=title.as_generic_type())
+            NewGroupCreated(
+                group_title=new_group.title.as_generic_type(),
+                group_oid=new_group.oid,
+            )
         )
+
+        return new_group

@@ -49,9 +49,9 @@ class EmptyGroupTitle(ApplicationException):
 
 
 @dataclass(eq=False)
-class GroupTitleTooLong(ApplicationException):
+class GroupTitleLengthIsNotValid(ApplicationException):
     title: str
 
     @property
     def message(self) -> str:
-        return f"Group title is too long: {self.title}"
+        return f"Group title is not valid: {self.title}"
