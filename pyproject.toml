@@ -9,7 +9,6 @@ readme = "README.md"
 python = "^3.11"
 fastapi = "^0.111.0"
 sqlalchemy = "^2.0.30"
-asyncpg = "^0.29.0"
 pre-commit = "^3.7.0"
 uvicorn = {extras = ["all"], version = "^0.29.0"}
 ipython = "^8.24.0"
@@ -17,6 +16,8 @@ motor = {extras = ["all"], version = "^3.4.0"}
 email-validator = "^2.1.1"
 pytest = "^8.2.0"
 pytest-asyncio = "^0.23.6"
+faker = "^25.2.0"
+punq = "^0.7.0"
 
 
 [build-system]

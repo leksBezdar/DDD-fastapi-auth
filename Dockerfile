@@ -7,6 +7,7 @@ WORKDIR /app
 
 RUN apt update -y && \
     apt install -y python3-dev \
+    && apt-get install -y --no-install-recommends curl \
     gcc \
     musl-dev
 

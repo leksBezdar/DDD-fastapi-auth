@@ -15,6 +15,12 @@ services:
       - ../app/:/app/
     networks:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://main-app:8000/healthcheck/"]
+      interval: 300s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
 
 networks:
   backend:
