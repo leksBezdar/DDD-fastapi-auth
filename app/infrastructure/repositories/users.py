@@ -20,5 +20,5 @@ class FakeGroupRepository(ABC):
         except StopIteration:
             return False
 
-    def add_group(self, group: UserGroup) -> None:
+    async def add_group(self, group: UserGroup) -> None:
         self._saved_groups.append(group)

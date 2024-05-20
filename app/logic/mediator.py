@@ -26,7 +26,7 @@ class Mediator:
         self.events_map[event].append(event_handlers)
 
     def register_command(
-        self, command: CT, command_handlers: Iterable[EventHandler[CT, CR]]
+        self, command: CT, command_handlers: Iterable[CommandHandler[CT, CR]]
     ):
         self.commands_map[command].extend(command_handlers)
 

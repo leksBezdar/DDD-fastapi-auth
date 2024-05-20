@@ -54,4 +54,4 @@ class GroupTitleLengthIsNotValid(ApplicationException):
 
     @property
     def message(self) -> str:
-        return f"Group title is not valid: {self.title}"
+        return f"Group title length is not valid: {self.title}"
