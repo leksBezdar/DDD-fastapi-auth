@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from application.api.users.routers import user_router
+from application.api.users.routers import group_router
 from .healthcheck import healthcheck_router
 
 
@@ -11,7 +11,7 @@ def create_app() -> FastAPI:
         debug=False,
     )
 
-    app.include_router(user_router, prefix="/users", tags=["USER"])
+    app.include_router(group_router, prefix="/groups", tags=["GROUP"])
     app.include_router(healthcheck_router, prefix="/healthcheck", tags=["HEALTHCHECK"])
 
     return app

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from domain.entities.users import UserGroup
 from domain.values.users import Title
-from infrastructure.repositories.base import BaseGroupRepository
+from infrastructure.repositories.users.base import BaseGroupRepository
 from logic.commands.base import BaseCommand, CommandHandler
 from logic.exceptions.users import GroupAlreadyExistsException
 

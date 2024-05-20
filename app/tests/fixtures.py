@@ -1,7 +1,7 @@
 from punq import Container, Scope
 
-from infrastructure.repositories.base import BaseGroupRepository
-from infrastructure.repositories.users import FakeGroupRepository
+from infrastructure.repositories.users.base import BaseGroupRepository
+from infrastructure.repositories.users.fake_repository import FakeGroupRepository
 from logic.init import _init_container
 
 

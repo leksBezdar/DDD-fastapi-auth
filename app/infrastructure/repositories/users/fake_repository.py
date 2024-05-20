@@ -1,11 +1,11 @@
-from abc import ABC
 from dataclasses import dataclass, field
 
 from domain.entities.users import UserGroup
+from infrastructure.repositories.users.base import BaseGroupRepository
 
 
-@dataclass
-class FakeGroupRepository(ABC):
+@dataclass(frozen=True)
+class FakeGroupRepository(BaseGroupRepository):
     _saved_groups: list[UserGroup] = field(default_factory=list, kw_only=True)
 
     async def check_group_exists_by_title(self, title: str) -> bool:

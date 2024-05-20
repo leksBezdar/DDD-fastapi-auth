@@ -1,3 +1,5 @@
+from typing import Annotated
+from punq import Container
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from application.api.exceptions import SErrorMessage
@@ -8,10 +10,10 @@ from logic.init import init_container
 from logic.mediator import Mediator
 
 
-user_router = APIRouter()
+group_router = APIRouter()
 
 
-@user_router.post(
+@group_router.post(
     "/",
     responses={
         status.HTTP_201_CREATED: {"model": SCreateGroupOut},
@@ -20,7 +22,7 @@ user_router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def create_group_handler(
-    group: SCreateGroupIn, container=Depends(init_container)
+    group: SCreateGroupIn, container: Annotated[Container, Depends(init_container)]
 ):
     """Creates new user group."""
     mediator: Mediator = container.resolve(Mediator)
