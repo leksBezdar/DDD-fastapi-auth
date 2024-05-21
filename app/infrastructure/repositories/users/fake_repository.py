@@ -20,5 +20,7 @@ class FakeGroupRepository(BaseGroupRepository):
         except StopIteration:
             return False
 
+    async def get_group_by_oid(self, oid: str) -> UserGroup | None: ...
+
     async def add_group(self, group: UserGroup) -> None:
         self._saved_groups.append(group)
