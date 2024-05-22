@@ -7,7 +7,7 @@ from infrastructure.repositories.users.base import (
     BaseUserRepository,
 )
 from logic.commands.base import BaseCommand, CommandHandler
-from logic.exceptions.users import GroupAlreadyExistsException, GroupNotFound
+from logic.exceptions.users import GroupAlreadyExistsException, GroupNotFoundException
 
 
 @dataclass(frozen=True)
@@ -48,7 +48,7 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
         group = await self.group_repository.get_group_by_oid(oid=command.group_oid)
 
         if not (group):
-            raise GroupNotFound(group_oid=command.group_oid)
+            raise GroupNotFoundException(group_oid=command.group_oid)
 
         user = User(
             username=Username(value=command.username),

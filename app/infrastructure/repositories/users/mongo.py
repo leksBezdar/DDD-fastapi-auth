@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from motor.core import AgnosticClient
+from motor.core import AgnosticClient, AgnosticCollection
 
 from domain.entities.users import User, UserGroup
 from infrastructure.repositories.users.base import (
@@ -22,7 +22,7 @@ class BaseMongoDBRepository(ABC):
     mongo_db_collection_name: str
 
     @property
-    def _collection(self):
+    def _collection(self) -> AgnosticCollection:
         return self.mongo_db_client[self.mongo_db_db_name][
             self.mongo_db_collection_name
         ]

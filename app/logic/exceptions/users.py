@@ -13,7 +13,7 @@ class GroupAlreadyExistsException(LogicException):
 
 
 @dataclass(eq=False)
-class GroupNotFound(LogicException):
+class GroupNotFoundException(LogicException):
     oid: str
 
     @property

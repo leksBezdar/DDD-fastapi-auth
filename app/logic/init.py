@@ -18,6 +18,7 @@ from logic.commands.users import (
     CreateUserCommandHandler,
 )
 from logic.mediator import Mediator
+from logic.queries.users import GetGroupQuery, GetGroupQueryHandler
 from settings.config import Settings
 
 
@@ -71,6 +72,7 @@ def _init_container() -> Container:
     # Command handlers
     container.register(CreateGroupCommandHandler)
     container.register(CreateUserCommandHandler)
+    container.register(GetGroupQueryHandler)
 
     # Mediator
     def init_mediator() -> Mediator:
@@ -84,6 +86,8 @@ def _init_container() -> Container:
             CreateUserCommand,
             [container.resolve(CreateUserCommandHandler)],
         )
+
+        mediator.register_query(GetGroupQuery, container.resolve(GetGroupQueryHandler))
 
         return mediator
 

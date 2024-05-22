@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 from domain.entities.users import User, UserGroup
 
 
-@dataclass(frozen=True)
 class BaseGroupRepository(ABC):
     @abstractmethod
     async def check_group_exists_by_title(self, title: str) -> bool: ...
@@ -16,7 +14,6 @@ class BaseGroupRepository(ABC):
     async def add_group(self, group: UserGroup) -> None: ...
 
 
-@dataclass(frozen=True)
 class BaseUserRepository(ABC):
     @abstractmethod
     async def check_user_exists_by_username(self, username: str) -> bool: ...

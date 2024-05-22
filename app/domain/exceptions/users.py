@@ -42,6 +42,15 @@ class EmptyEmail(ApplicationException):
         return "Email is empty"
 
 
+@dataclass(eq=False)
+class InvalidEmail(ApplicationException):
+    email: str
+
+    @property
+    def message(self) -> str:
+        return f"The provided email is not valid: {self.email}"
+
+
 class EmptyGroupTitle(ApplicationException):
     @property
     def message(self) -> str:

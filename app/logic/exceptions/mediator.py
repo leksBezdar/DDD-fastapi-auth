@@ -19,3 +19,12 @@ class CommandHandlersNotRegisteredException(LogicException):
     @property
     def message(self):
         return f"Could not find handlers for the command: {self.command_type}"
+
+
+@dataclass(eq=False)
+class QueryHandlersNotRegisteredException(LogicException):
+    query_type: type
+
+    @property
+    def message(self):
+        return f"Could not find handlers for the query: {self.query_type}"

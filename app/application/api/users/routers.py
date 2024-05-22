@@ -8,11 +8,13 @@ from application.api.users.schemas import (
     SCreateGroupOut,
     SCreateUserIn,
     SCreateUserOut,
+    SGetGroup,
 )
 from domain.exceptions.base import ApplicationException
 from logic.commands.users import CreateGroupCommand, CreateUserCommand
 from logic.init import init_container
 from logic.mediator import Mediator
+from logic.queries.users import GetGroupQuery
 
 
 group_router = APIRouter()
@@ -70,3 +72,26 @@ async def create_user_handler(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
     return SCreateUserOut.from_entity(user)
+
+
+@group_router.get(
+    "/{group_oid}/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": SGetGroup},
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+    },
+)
+async def get_group_with_users(
+    group_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+):
+    """Get user group info."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        group = await mediator.handle_query(GetGroupQuery(group_oid=group_oid))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+    return SGetGroup.from_entity(group)

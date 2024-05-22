@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from email_validator import validate_email
+import re
 
 from domain.exceptions.users import (
     EmptyEmail,
@@ -7,6 +7,7 @@ from domain.exceptions.users import (
     EmptyPassword,
     EmptyUsername,
     GroupTitleLengthIsNotValid,
+    InvalidEmail,
     PasswordLengthIsNotValid,
     UsernameLengthIsNotValid,
 )
@@ -38,7 +39,9 @@ class Email(BaseValueObject):
         if not self.value:
             raise EmptyEmail()
 
-        validate_email(self.value, check_deliverability=False)
+        email_validate_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_validate_pattern, self.value):
+            raise InvalidEmail(self.value)
 
     def as_generic_type(self):
         return str(self.value)
