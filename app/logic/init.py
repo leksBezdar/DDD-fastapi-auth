@@ -18,7 +18,12 @@ from logic.commands.users import (
     CreateUserCommandHandler,
 )
 from logic.mediator import Mediator
-from logic.queries.users import GetGroupQuery, GetGroupQueryHandler
+from logic.queries.users import (
+    GetGroupQuery,
+    GetGroupQueryHandler,
+    GetUserQuery,
+    GetUserQueryHandler,
+)
 from settings.config import Settings
 
 
@@ -55,7 +60,7 @@ def _init_container() -> Container:
         return MongoDBUserRepository(
             mongo_db_client=client,
             mongo_db_db_name=settings.mongodb_group_database,
-            mongo_db_collection_name=settings.mongodb_group_collection,
+            mongo_db_collection_name=settings.mongodb_user_collection,
         )
 
     container.register(
@@ -72,7 +77,10 @@ def _init_container() -> Container:
     # Command handlers
     container.register(CreateGroupCommandHandler)
     container.register(CreateUserCommandHandler)
+
+    # Query handlers
     container.register(GetGroupQueryHandler)
+    container.register(GetUserQueryHandler)
 
     # Mediator
     def init_mediator() -> Mediator:
@@ -81,13 +89,13 @@ def _init_container() -> Container:
             CreateGroupCommand,
             [container.resolve(CreateGroupCommandHandler)],
         )
-
         mediator.register_command(
             CreateUserCommand,
             [container.resolve(CreateUserCommandHandler)],
         )
 
         mediator.register_query(GetGroupQuery, container.resolve(GetGroupQueryHandler))
+        mediator.register_query(GetUserQuery, container.resolve(GetUserQueryHandler))
 
         return mediator
 

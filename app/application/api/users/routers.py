@@ -2,19 +2,22 @@ from typing import Annotated
 from punq import Container
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from application.api.exceptions import SErrorMessage
+from application.api.schemas import SErrorMessage
+from application.api.users.filters import GetUsersFilters
 from application.api.users.schemas import (
     SCreateGroupIn,
     SCreateGroupOut,
     SCreateUserIn,
     SCreateUserOut,
     SGetGroup,
+    SGetUser,
+    SGetUserQueryResponse,
 )
 from domain.exceptions.base import ApplicationException
 from logic.commands.users import CreateGroupCommand, CreateUserCommand
 from logic.init import init_container
 from logic.mediator import Mediator
-from logic.queries.users import GetGroupQuery
+from logic.queries.users import GetGroupQuery, GetUserQuery
 
 
 group_router = APIRouter()
@@ -82,7 +85,7 @@ async def create_user_handler(
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
     },
 )
-async def get_group_with_users(
+async def get_group(
     group_oid: str,
     container: Annotated[Container, Depends(init_container)],
 ):
@@ -95,3 +98,36 @@ async def get_group_with_users(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
     return SGetGroup.from_entity(group)
+
+
+@group_router.get(
+    "/{group_oid}/users/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": SGetUserQueryResponse},
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+    },
+)
+async def get_users(
+    group_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+    filters: GetUsersFilters = Depends(),
+) -> SGetUserQueryResponse:
+    """Get all users from specified group."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        users, count = await mediator.handle_query(
+            GetUserQuery(
+                group_oid=group_oid, filters=filters.to_infrastructure_filters()
+            )
+        )
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+    return SGetUserQueryResponse(
+        count=count,
+        limit=filters.limit,
+        offset=filters.offset,
+        items=[SGetUser.from_entity(user) for user in users],
+    )

@@ -1,7 +1,8 @@
 from collections.abc import Iterable
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
+from application.api.schemas import SBaseQueryResponse
 from domain.entities.users import User, UserGroup
 
 
@@ -19,7 +20,7 @@ class SCreateGroupOut(BaseModel):
 
 
 class SCreateUserIn(BaseModel):
-    email: str
+    email: EmailStr
     username: str
     password: str
 
@@ -42,9 +43,10 @@ class SCreateUserOut(BaseModel):
 
 class SGetUser(BaseModel):
     oid: str
-    email: str
+    email: EmailStr
     username: str
     created_at: datetime
+    group_oid: str
 
     @classmethod
     def from_entity(cls, user: User) -> "SGetUser":
@@ -53,6 +55,7 @@ class SGetUser(BaseModel):
             email=user.email.as_generic_type(),
             username=user.username.as_generic_type(),
             created_at=user.created_at,
+            group_oid=user.group_id,
         )
 
 
@@ -70,3 +73,7 @@ class SGetGroup(BaseModel):
             created_at=group.created_at,
             users=[SGetUser.from_entity(user) for user in group.users],
         )
+
+
+class SGetUserQueryResponse(SBaseQueryResponse):
+    items: list[SGetUser]

@@ -8,7 +8,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="DDD auth",
         description="IP address? How do they know where i pee?",
-        debug=False,
+        debug=True,
     )
 
     app.include_router(group_router, prefix="/groups", tags=["GROUP"])

@@ -10,6 +10,7 @@ def convert_user_entity_to_document(user: User) -> dict:
         "username": user.username.as_generic_type(),
         "password": user.password.as_generic_type(),
         "created_at": user.created_at,
+        "group_oid": user.group_id,
     }
 
 
@@ -18,7 +19,6 @@ def convert_group_entity_to_document(group: UserGroup) -> dict:
         "oid": group.oid,
         "title": group.title.as_generic_type(),
         "created_at": group.created_at,
-        "users": [convert_user_entity_to_document(user) for user in group.users],
     }
 
 
@@ -29,6 +29,7 @@ def convert_user_document_to_entity(user_document: Mapping[str, Any]) -> User:
         username=Username(value=user_document["username"]),
         password=Password(value=user_document["password"]),
         created_at=user_document["created_at"],
+        group_id=user_document["group_oid"],
     )
 
 
@@ -37,8 +38,4 @@ def convert_group_document_to_entity(group_documment: Mapping[str, Any]) -> User
         title=Title(value=group_documment["title"]),
         oid=group_documment["oid"],
         created_at=group_documment["created_at"],
-        users={
-            convert_user_document_to_entity(user_document)
-            for user_document in group_documment["users"]
-        },
     )

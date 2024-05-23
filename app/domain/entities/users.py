@@ -10,6 +10,7 @@ class User(BaseEntity):
     email: Email
     username: Username
     password: Password
+    group_id: str
 
 
 @dataclass(eq=False)

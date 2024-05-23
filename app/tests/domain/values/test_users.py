@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 from faker import Faker
 import pytest
 
@@ -24,6 +25,7 @@ def test_create_user_success(faker: Faker) -> None:
         email=email,
         username=username,
         password=password,
+        group_id=str(uuid4()),
     )
 
     assert user.email == email
@@ -99,6 +101,7 @@ def test_add_user_to_user_group(faker: Faker) -> None:
         email=email,
         username=username,
         password=password,
+        group_id=str(uuid4()),
     )
 
     title = Title(faker.text(15))
@@ -117,6 +120,7 @@ def test_new_user_events(faker: Faker) -> None:
         email=email,
         username=username,
         password=password,
+        group_id=str(uuid4()),
     )
 
     title = Title(faker.text(15))

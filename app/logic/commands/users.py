@@ -48,14 +48,15 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
         group = await self.group_repository.get_group_by_oid(oid=command.group_oid)
 
         if not (group):
-            raise GroupNotFoundException(group_oid=command.group_oid)
+            raise GroupNotFoundException(oid=command.group_oid)
 
         user = User(
             username=Username(value=command.username),
             email=Email(value=command.email),
             password=Password(value=command.password),
+            group_id=command.group_oid,
         )
         group.add_user(user)
-        await self.user_repository.add_user(group_oid=command.group_oid, user=user)
+        await self.user_repository.add_user(user=user)
 
         return user

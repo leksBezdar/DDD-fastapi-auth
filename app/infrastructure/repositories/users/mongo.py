@@ -1,4 +1,5 @@
 from abc import ABC
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 from motor.core import AgnosticClient, AgnosticCollection
@@ -11,8 +12,10 @@ from infrastructure.repositories.users.base import (
 from infrastructure.repositories.users.converters import (
     convert_group_document_to_entity,
     convert_group_entity_to_document,
+    convert_user_document_to_entity,
     convert_user_entity_to_document,
 )
+from infrastructure.repositories.users.filters.users import GetUsersFilters
 
 
 @dataclass(frozen=True)
@@ -50,10 +53,25 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
     async def check_user_exists_by_username(self, username: str) -> bool:
         return bool(await self._collection.find_one(filter={"username": username}))
 
-    async def add_user(self, group_oid: str, user: User) -> None:
-        await self._collection.update_one(
-            filter={"oid": group_oid},
-            update={
-                "$push": {"users": convert_user_entity_to_document(user=user)},
-            },
+    async def add_user(self, user: User) -> None:
+        await self._collection.insert_one(
+            document=convert_user_entity_to_document(user)
         )
+
+    async def get_users(
+        self, group_oid: str, filters: GetUsersFilters
+    ) -> tuple[Iterable[User], int]:
+        find_conditions = {"group_oid": group_oid}
+        cursor = (
+            self._collection.find(find_conditions)
+            .skip(filters.offset)
+            .limit(filters.limit)
+        )
+
+        users = [
+            convert_user_document_to_entity(user_document=user_document)
+            async for user_document in cursor
+        ]
+        count = await self._collection.count_documents(filter=find_conditions)
+
+        return users, count
