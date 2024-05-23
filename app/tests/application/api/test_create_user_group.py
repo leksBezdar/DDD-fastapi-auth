@@ -11,7 +11,6 @@ async def test_create_group_success(app: FastAPI, client: TestClient, faker: Fak
     url = app.url_path_for("create_group_handler")
     title = faker.text(15)
     response: Response = client.post(url=url, json={"title": title})
-
     assert response.is_success
     json_data = response.json()
 

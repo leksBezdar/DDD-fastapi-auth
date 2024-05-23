@@ -17,7 +17,8 @@ from logic.commands.users import (
     CreateUserCommand,
     CreateUserCommandHandler,
 )
-from logic.mediator import Mediator
+from logic.mediator.base import Mediator
+from logic.mediator.event import EventMediator
 from logic.queries.users import (
     GetGroupQuery,
     GetGroupQueryHandler,
@@ -28,7 +29,7 @@ from settings.config import Settings
 
 
 @lru_cache(1)
-def init_container() -> Container:
+def init_container():
     return _init_container()
 
 
@@ -69,35 +70,50 @@ def _init_container() -> Container:
         scope=Scope.singleton,
     )
     container.register(
-        BaseUserRepository,
-        factory=init_user_mongodb_repository,
-        scope=Scope.singleton,
+        BaseUserRepository, factory=init_user_mongodb_repository, scope=Scope.singleton
     )
 
     # Command handlers
     container.register(CreateGroupCommandHandler)
     container.register(CreateUserCommandHandler)
 
-    # Query handlers
+    # Query Handlers
     container.register(GetGroupQueryHandler)
     container.register(GetUserQueryHandler)
 
     # Mediator
     def init_mediator() -> Mediator:
         mediator = Mediator()
+
+        create_chat_handler = CreateGroupCommandHandler(
+            _mediator=mediator, group_repository=container.resolve(BaseGroupRepository)
+        )
+        create_message_handler = CreateUserCommandHandler(
+            _mediator=mediator,
+            user_repository=container.resolve(BaseUserRepository),
+            group_repository=container.resolve(BaseGroupRepository),
+        )
+
         mediator.register_command(
             CreateGroupCommand,
-            [container.resolve(CreateGroupCommandHandler)],
+            [create_chat_handler],
         )
         mediator.register_command(
             CreateUserCommand,
-            [container.resolve(CreateUserCommandHandler)],
+            [create_message_handler],
         )
-
-        mediator.register_query(GetGroupQuery, container.resolve(GetGroupQueryHandler))
-        mediator.register_query(GetUserQuery, container.resolve(GetUserQueryHandler))
+        mediator.register_query(
+            GetGroupQuery,
+            container.resolve(GetGroupQueryHandler),
+        )
+        mediator.register_query(
+            GetUserQuery,
+            container.resolve(GetUserQueryHandler),
+        )
 
         return mediator
 
     container.register(Mediator, factory=init_mediator)
+    container.register(EventMediator, factory=init_mediator)
+
     return container

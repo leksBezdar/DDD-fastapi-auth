@@ -25,8 +25,9 @@ class CreateGroupCommandHandler(CommandHandler[CreateGroupCommand, UserGroup]):
 
         title = Title(value=command.title)
         new_group = UserGroup.create_group(title=title)
-        # TODO pull events
+
         await self.group_repository.add_group(new_group)
+        await self._mediator.publish(new_group.pull_events())
 
         return new_group
 

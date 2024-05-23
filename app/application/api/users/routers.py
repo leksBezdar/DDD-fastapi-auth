@@ -16,7 +16,7 @@ from application.api.users.schemas import (
 from domain.exceptions.base import ApplicationException
 from logic.commands.users import CreateGroupCommand, CreateUserCommand
 from logic.init import init_container
-from logic.mediator import Mediator
+from logic.mediator.base import Mediator
 from logic.queries.users import GetGroupQuery, GetUserQuery
 
 

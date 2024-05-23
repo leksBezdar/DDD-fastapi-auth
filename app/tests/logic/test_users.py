@@ -6,7 +6,7 @@ from domain.values.users import Title
 from infrastructure.repositories.users.base import BaseGroupRepository
 from logic.commands.users import CreateGroupCommand
 from logic.exceptions.users import GroupAlreadyExistsException
-from logic.mediator import Mediator
+from logic.mediator.base import Mediator
 from faker import Faker
 
 
