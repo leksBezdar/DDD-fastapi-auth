@@ -59,5 +59,6 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
         )
         group.add_user(user)
         await self.user_repository.add_user(user=user)
+        await self._mediator.publish(group.pull_events())
 
         return user

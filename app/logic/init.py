@@ -1,8 +1,12 @@
 from functools import lru_cache
+from aiokafka import AIOKafkaProducer
 from punq import Container, Scope
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
+from domain.events.users import NewGroupCreatedEvent, NewUserCreatedEvent
+from infrastructure.message_brokers.base import BaseMessageBroker
+from infrastructure.message_brokers.kafka import KafkaMessageBroker
 from infrastructure.repositories.users.base import (
     BaseGroupRepository,
     BaseUserRepository,
@@ -17,6 +21,7 @@ from logic.commands.users import (
     CreateUserCommand,
     CreateUserCommandHandler,
 )
+from logic.events.users import NewGroupCreatedEventHandler, NewUserCreatedEventHandler
 from logic.mediator.base import Mediator
 from logic.mediator.event import EventMediator
 from logic.queries.users import (
@@ -81,14 +86,25 @@ def _init_container() -> Container:
     container.register(GetGroupQueryHandler)
     container.register(GetUserQueryHandler)
 
+    def create_message_broker() -> BaseMessageBroker:
+        return KafkaMessageBroker(
+            producer=AIOKafkaProducer(bootstrap_servers=settings.kafka_url)
+        )
+
+    # Message Broker
+    container.register(
+        BaseMessageBroker, factory=create_message_broker, scope=Scope.singleton
+    )
+
     # Mediator
     def init_mediator() -> Mediator:
         mediator = Mediator()
 
+        # Command Handlers
         create_chat_handler = CreateGroupCommandHandler(
             _mediator=mediator, group_repository=container.resolve(BaseGroupRepository)
         )
-        create_message_handler = CreateUserCommandHandler(
+        create_user_handler = CreateUserCommandHandler(
             _mediator=mediator,
             user_repository=container.resolve(BaseUserRepository),
             group_repository=container.resolve(BaseGroupRepository),
@@ -100,8 +116,28 @@ def _init_container() -> Container:
         )
         mediator.register_command(
             CreateUserCommand,
-            [create_message_handler],
+            [create_user_handler],
         )
+
+        # Event Handlers
+        new_group_created_event_handler = NewGroupCreatedEventHandler(
+            broker_topic=settings.new_group_event_topic,
+            message_broker=container.resolve(BaseMessageBroker),
+        )
+        new_user_created_event_handler = NewUserCreatedEventHandler(
+            broker_topic=settings.new_user_event_topic,
+            message_broker=container.resolve(BaseMessageBroker),
+        )
+        mediator.register_event(
+            NewGroupCreatedEvent,
+            [new_group_created_event_handler],
+        )
+        mediator.register_event(
+            NewUserCreatedEvent,
+            [new_user_created_event_handler],
+        )
+
+        # Query Handlers
         mediator.register_query(
             GetGroupQuery,
             container.resolve(GetGroupQueryHandler),

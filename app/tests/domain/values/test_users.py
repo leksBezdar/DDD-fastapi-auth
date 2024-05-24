@@ -4,7 +4,7 @@ from faker import Faker
 import pytest
 
 from domain.entities.users import User, UserGroup
-from domain.events.users import UserAddedToGroupEvent
+from domain.events.users import NewUserCreatedEvent
 from domain.exceptions.users import (
     EmptyGroupTitle,
     EmptyPassword,
@@ -135,7 +135,7 @@ def test_new_user_events(faker: Faker) -> None:
 
     new_event = events[0]
 
-    assert isinstance(new_event, UserAddedToGroupEvent), new_event
+    assert isinstance(new_event, NewUserCreatedEvent), new_event
     assert new_event.group_oid == group.oid
     assert new_event.username == user.username.as_generic_type()
     assert new_event.user_oid == user.oid

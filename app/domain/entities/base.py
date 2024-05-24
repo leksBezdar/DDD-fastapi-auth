@@ -1,6 +1,9 @@
 from abc import ABC
 from copy import copy
-from dataclasses import dataclass, field
+from dataclasses import (
+    dataclass,
+    field,
+)
 from datetime import datetime
 from uuid import uuid4
 
@@ -13,9 +16,10 @@ class BaseEntity(ABC):
         default_factory=lambda: str(uuid4()),
         kw_only=True,
     )
-
-    _events: list[BaseEvent] = field(default_factory=list, kw_only=True)
-
+    _events: list[BaseEvent] = field(
+        default_factory=list,
+        kw_only=True,
+    )
     created_at: datetime = field(
         default_factory=datetime.now,
         kw_only=True,

@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from domain.entities.base import BaseEntity
 from domain.values.users import Title, Username, Email, Password
-from domain.events.users import NewGroupCreated, UserAddedToGroupEvent
+from domain.events.users import NewGroupCreatedEvent, NewUserCreatedEvent
 
 
 @dataclass(eq=False)
@@ -21,7 +21,7 @@ class UserGroup(BaseEntity):
     def add_user(self, user: User):
         self.users.add(user)
         self.register_event(
-            UserAddedToGroupEvent(
+            NewUserCreatedEvent(
                 username=user.username.as_generic_type(),
                 user_oid=user.oid,
                 group_oid=self.oid,
@@ -32,7 +32,7 @@ class UserGroup(BaseEntity):
     def create_group(cls, title: Title) -> "UserGroup":
         new_group = cls(title=title)
         new_group.register_event(
-            NewGroupCreated(
+            NewGroupCreatedEvent(
                 group_title=new_group.title.as_generic_type(),
                 group_oid=new_group.oid,
             )
