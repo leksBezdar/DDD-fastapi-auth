@@ -56,6 +56,9 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
     async def add_user(self, user: User) -> None:
         await self._collection.insert_one(convert_user_entity_to_document(user))
 
+    async def get_user(self, user_oid: str) -> User | None:
+        return await self._collection.find_one(filter={"oid": user_oid})
+
     async def get_users(
         self, group_oid: str, filters: GetUsersFilters
     ) -> tuple[Iterable[User], int]:

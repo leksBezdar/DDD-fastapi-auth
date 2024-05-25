@@ -27,3 +27,6 @@ class BaseUserRepository(ABC):
     async def get_users(
         self, group_oid: str, filters: GetUsersFilters
     ) -> tuple[Iterable[User], int]: ...
+
+    @abstractmethod
+    async def get_user(self, user_oid: str) -> User | None: ...

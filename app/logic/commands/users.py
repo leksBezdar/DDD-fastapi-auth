@@ -57,6 +57,7 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
             password=Password(value=command.password),
             group_id=command.group_oid,
         )
+
         group.add_user(user)
         await self.user_repository.add_user(user=user)
         await self._mediator.publish(group.pull_events())

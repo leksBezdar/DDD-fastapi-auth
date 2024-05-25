@@ -17,7 +17,7 @@ from domain.exceptions.base import ApplicationException
 from logic.commands.users import CreateGroupCommand, CreateUserCommand
 from logic.init import init_container
 from logic.mediator.base import Mediator
-from logic.queries.users import GetGroupQuery, GetUserQuery
+from logic.queries.users import GetGroupQuery, GetUserQuery, GetUsersQuery
 
 
 group_router = APIRouter()
@@ -118,7 +118,7 @@ async def get_users(
 
     try:
         users, count = await mediator.handle_query(
-            GetUserQuery(
+            GetUsersQuery(
                 group_oid=group_oid, filters=filters.to_infrastructure_filters()
             )
         )
@@ -131,3 +131,17 @@ async def get_users(
         offset=filters.offset,
         items=[SGetUser.from_entity(user) for user in users],
     )
+
+
+@user_router.get("/verify/{token}/")
+async def verify_user(
+    token: str,
+    container: Annotated[Container, Depends(init_container)],
+) -> bool:
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        user = await mediator.handle_query(GetUserQuery(user_oid=token))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    return bool(user)

@@ -17,9 +17,22 @@ class GetGroupQuery(BaseQuery):
 
 
 @dataclass(frozen=True)
-class GetUserQuery(BaseQuery):
+class GetUsersQuery(BaseQuery):
     group_oid: str
     filters: GetUsersFilters
+
+
+@dataclass(frozen=True)
+class GetUserQuery(BaseQuery):
+    user_oid: str
+
+
+@dataclass(frozen=True)
+class GetUserQueryHandler(BaseQueryHandler):
+    users_repository: BaseUserRepository  # TODO pull users separately
+
+    async def handle(self, query: GetUserQuery) -> User | None:
+        return await self.users_repository.get_user(user_oid=query.user_oid)
 
 
 @dataclass(frozen=True)
@@ -37,12 +50,12 @@ class GetGroupQueryHandler(BaseQueryHandler):
 
 
 @dataclass(frozen=True)
-class GetUserQueryHandler(
+class GetUsersQueryHandler(
     BaseQueryHandler,
 ):
     users_repository: BaseUserRepository
 
-    async def handle(self, query: GetUserQuery) -> Iterable[User]:
+    async def handle(self, query: GetUsersQuery) -> Iterable[User]:
         return await self.users_repository.get_users(
             group_oid=query.group_oid, filters=query.filters
         )

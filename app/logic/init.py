@@ -1,5 +1,6 @@
 from functools import lru_cache
-from aiokafka import AIOKafkaProducer
+from uuid import uuid4
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from punq import Container, Scope
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -29,12 +30,14 @@ from logic.queries.users import (
     GetGroupQueryHandler,
     GetUserQuery,
     GetUserQueryHandler,
+    GetUsersQuery,
+    GetUsersQueryHandler,
 )
 from settings.config import Settings
 
 
 @lru_cache(1)
-def init_container():
+def init_container() -> Container:
     return _init_container()
 
 
@@ -84,11 +87,17 @@ def _init_container() -> Container:
 
     # Query Handlers
     container.register(GetGroupQueryHandler)
+    container.register(GetUsersQueryHandler)
     container.register(GetUserQueryHandler)
 
     def create_message_broker() -> BaseMessageBroker:
         return KafkaMessageBroker(
-            producer=AIOKafkaProducer(bootstrap_servers=settings.kafka_url)
+            producer=AIOKafkaProducer(bootstrap_servers=settings.kafka_url),
+            consumer=AIOKafkaConsumer(
+                bootstrap_servers=settings.kafka_url,
+                group_id=f"{uuid4()}",
+                metadata_max_age_ms=30000,
+            ),
         )
 
     # Message Broker
@@ -141,6 +150,10 @@ def _init_container() -> Container:
         mediator.register_query(
             GetGroupQuery,
             container.resolve(GetGroupQueryHandler),
+        )
+        mediator.register_query(
+            GetUsersQuery,
+            container.resolve(GetUsersQueryHandler),
         )
         mediator.register_query(
             GetUserQuery,

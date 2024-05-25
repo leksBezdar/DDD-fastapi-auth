@@ -23,6 +23,7 @@ class UserGroup(BaseEntity):
         self.register_event(
             NewUserCreatedEvent(
                 username=user.username.as_generic_type(),
+                email=user.email.as_generic_type(),
                 user_oid=user.oid,
                 group_oid=self.oid,
             )
