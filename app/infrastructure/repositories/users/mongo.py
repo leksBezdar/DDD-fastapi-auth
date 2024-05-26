@@ -63,6 +63,11 @@ class MongoDBGroupRepository(BaseGroupRepository, BaseMongoDBRepository):
 
         return groups, count
 
+    async def delete_group(self, group_oid: str) -> UserGroup | None:
+        group = await self._collection.find_one_and_delete(filter={"oid": group_oid})
+        if group:
+            return convert_group_document_to_entity(group_document=group)
+
 
 @dataclass(frozen=True)
 class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):

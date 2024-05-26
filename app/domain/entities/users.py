@@ -1,9 +1,13 @@
-from dataclasses import dataclass
+from dataclasses import field, dataclass
 from datetime import datetime
 
 from domain.entities.base import BaseEntity
 from domain.values.users import Title, Username, Email, Password
-from domain.events.users import NewGroupCreatedEvent, NewUserCreatedEvent
+from domain.events.users import (
+    GroupDeletedEvent,
+    NewGroupCreatedEvent,
+    NewUserCreatedEvent,
+)
 
 
 @dataclass(eq=False)
@@ -12,7 +16,7 @@ class User(BaseEntity):
     username: Username
     password: Password
     group_id: str
-    is_verified: bool = False
+    is_verified: bool = field(default=False, kw_only=True)
 
     @classmethod
     async def create(
@@ -43,6 +47,7 @@ class VerificationToken(BaseEntity):
 @dataclass(eq=False)
 class UserGroup(BaseEntity):
     title: Title
+    is_deleted: bool = field(default=False, kw_only=True)
 
     @classmethod
     def create_group(cls, title: Title) -> "UserGroup":
@@ -55,3 +60,11 @@ class UserGroup(BaseEntity):
         )
 
         return new_group
+
+    def delete(self):
+        self.is_deleted = True
+        self.register_event(
+            GroupDeletedEvent(
+                group_oid=self.oid, group_title=self.title.as_generic_type()
+            )
+        )

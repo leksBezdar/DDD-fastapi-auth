@@ -15,7 +15,11 @@ from application.api.users.schemas import (
     SGetUsersQueryResponse,
 )
 from domain.exceptions.base import ApplicationException
-from logic.commands.users import CreateGroupCommand, CreateUserCommand
+from logic.commands.users import (
+    CreateGroupCommand,
+    CreateUserCommand,
+    DeleteGroupCommand,
+)
 from logic.init import init_container
 from logic.mediator.base import Mediator
 from logic.queries.users import (
@@ -134,6 +138,24 @@ async def get_groups(
         offset=filters.offset,
         items=[SGetGroup.from_entity(group) for group in groups],
     )
+
+
+@group_router.delete(
+    "/{group_oid}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
+)
+async def delete_group(
+    group_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+) -> None:
+    """Delete user group."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        await mediator.handle_command(DeleteGroupCommand(group_oid=group_oid))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 
 @user_router.get(

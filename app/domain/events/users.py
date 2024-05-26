@@ -22,3 +22,11 @@ class NewGroupCreatedEvent(BaseEvent):
 
     group_oid: str
     group_title: str
+
+
+@dataclass
+class GroupDeletedEvent(BaseEvent):
+    title: ClassVar[str] = "Group was deleted"
+
+    group_oid: str
+    group_title: str

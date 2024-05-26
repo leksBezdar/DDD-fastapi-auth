@@ -5,7 +5,11 @@ from punq import Container, Scope
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from domain.events.users import NewGroupCreatedEvent, NewUserCreatedEvent
+from domain.events.users import (
+    GroupDeletedEvent,
+    NewGroupCreatedEvent,
+    NewUserCreatedEvent,
+)
 from infrastructure.message_brokers.base import BaseMessageBroker
 from infrastructure.message_brokers.kafka import KafkaMessageBroker
 from infrastructure.repositories.users.base import (
@@ -21,8 +25,14 @@ from logic.commands.users import (
     CreateGroupCommandHandler,
     CreateUserCommand,
     CreateUserCommandHandler,
+    DeleteGroupCommand,
+    DeleteGroupCommandHandler,
 )
-from logic.events.users import NewGroupCreatedEventHandler, NewUserCreatedEventHandler
+from logic.events.users import (
+    GroupDeletedEventHandler,
+    NewGroupCreatedEventHandler,
+    NewUserCreatedEventHandler,
+)
 from logic.mediator.base import Mediator
 from logic.mediator.event import EventMediator
 from logic.queries.users import (
@@ -121,6 +131,9 @@ def _init_container() -> Container:
             user_repository=container.resolve(BaseUserRepository),
             group_repository=container.resolve(BaseGroupRepository),
         )
+        delete_group_handler = DeleteGroupCommandHandler(
+            _mediator=mediator, group_repository=container.resolve(BaseGroupRepository)
+        )
 
         mediator.register_command(
             CreateGroupCommand,
@@ -129,6 +142,10 @@ def _init_container() -> Container:
         mediator.register_command(
             CreateUserCommand,
             [create_user_handler],
+        )
+        mediator.register_command(
+            DeleteGroupCommand,
+            [delete_group_handler],
         )
 
         # Event Handlers
@@ -140,6 +157,10 @@ def _init_container() -> Container:
             broker_topic=settings.new_user_event_topic,
             message_broker=container.resolve(BaseMessageBroker),
         )
+        group_deleted_event_handler = GroupDeletedEventHandler(
+            broker_topic=settings.group_deleted_event_topic,
+            message_broker=container.resolve(BaseMessageBroker),
+        )
         mediator.register_event(
             NewGroupCreatedEvent,
             [new_group_created_event_handler],
@@ -148,6 +169,7 @@ def _init_container() -> Container:
             NewUserCreatedEvent,
             [new_user_created_event_handler],
         )
+        mediator.register_event(GroupDeletedEvent, [group_deleted_event_handler])
 
         # Query Handlers
         mediator.register_query(
