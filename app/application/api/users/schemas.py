@@ -29,6 +29,7 @@ class SCreateUserOut(BaseModel):
     email: str
     username: str
     created_at: datetime
+    is_verified: bool
 
     @classmethod
     def from_entity(cls, user: User) -> "SCreateUserOut":
@@ -37,6 +38,7 @@ class SCreateUserOut(BaseModel):
             email=user.email.as_generic_type(),
             username=user.username.as_generic_type(),
             created_at=user.created_at,
+            is_verified=user.is_verified,
         )
 
 
@@ -45,6 +47,7 @@ class SGetUser(BaseModel):
     email: EmailStr
     username: str
     created_at: datetime
+    is_verified: bool
     group_oid: str
 
     @classmethod
@@ -54,6 +57,7 @@ class SGetUser(BaseModel):
             email=user.email.as_generic_type(),
             username=user.username.as_generic_type(),
             created_at=user.created_at,
+            is_verified=user.is_verified,
             group_oid=user.group_id,
         )
 
@@ -72,5 +76,9 @@ class SGetGroup(BaseModel):
         )
 
 
-class SGetUserQueryResponse(SBaseQueryResponse):
+class SGetUsersQueryResponse(SBaseQueryResponse):
     items: list[SGetUser]
+
+
+class SGetGroupsQueryResponse(SBaseQueryResponse):
+    items: list[SGetGroup]

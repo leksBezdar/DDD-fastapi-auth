@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from datetime import datetime
 
 from domain.entities.base import BaseEntity
 from domain.values.users import Title, Username, Email, Password
@@ -11,23 +12,37 @@ class User(BaseEntity):
     username: Username
     password: Password
     group_id: str
+    is_verified: bool = False
+
+    @classmethod
+    async def create(
+        cls, username: Username, password: Password, email: Email, group_id: str
+    ) -> "User":
+        new_user = cls(
+            email=email, username=username, password=password, group_id=group_id
+        )
+        new_user.register_event(
+            NewUserCreatedEvent(
+                username=new_user.username.as_generic_type(),
+                email=new_user.email.as_generic_type(),
+                user_oid=new_user.oid,
+                group_oid=group_id,
+            )
+        )
+
+        return new_user
+
+
+@dataclass(eq=False)
+class VerificationToken(BaseEntity):
+    token: str
+    user_oid: str
+    expires_at: datetime
 
 
 @dataclass(eq=False)
 class UserGroup(BaseEntity):
     title: Title
-    users: set[User] = field(default_factory=set, kw_only=True)
-
-    def add_user(self, user: User):
-        self.users.add(user)
-        self.register_event(
-            NewUserCreatedEvent(
-                username=user.username.as_generic_type(),
-                email=user.email.as_generic_type(),
-                user_oid=user.oid,
-                group_oid=self.oid,
-            )
-        )
 
     @classmethod
     def create_group(cls, title: Title) -> "UserGroup":

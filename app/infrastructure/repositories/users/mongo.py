@@ -15,7 +15,10 @@ from infrastructure.repositories.users.converters import (
     convert_user_document_to_entity,
     convert_user_entity_to_document,
 )
-from infrastructure.repositories.users.filters.users import GetUsersFilters
+from infrastructure.repositories.users.filters.users import (
+    GetGroupsFilters,
+    GetUsersFilters,
+)
 
 
 @dataclass(frozen=True)
@@ -47,6 +50,19 @@ class MongoDBGroupRepository(BaseGroupRepository, BaseMongoDBRepository):
     async def add_group(self, group: UserGroup) -> None:
         await self._collection.insert_one(convert_group_entity_to_document(group))
 
+    async def get_groups(
+        self, filters: GetGroupsFilters
+    ) -> tuple[Iterable[UserGroup], int]:
+        cursor = self._collection.find().skip(filters.offset).limit(filters.limit)
+
+        groups = [
+            convert_group_document_to_entity(group_document=group_document)
+            async for group_document in cursor
+        ]
+        count = await self._collection.count_documents(filter={})
+
+        return groups, count
+
 
 @dataclass(frozen=True)
 class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
@@ -76,3 +92,6 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
         count = await self._collection.count_documents(filter=find_conditions)
 
         return users, count
+
+    async def delete_user(self, user_oid: str) -> None:
+        await self._collection.delete_one(filter={"oid": user_oid})

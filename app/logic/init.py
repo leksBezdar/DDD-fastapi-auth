@@ -28,6 +28,8 @@ from logic.mediator.event import EventMediator
 from logic.queries.users import (
     GetGroupQuery,
     GetGroupQueryHandler,
+    GetGroupsQuery,
+    GetGroupsQueryHandler,
     GetUserQuery,
     GetUserQueryHandler,
     GetUsersQuery,
@@ -88,6 +90,7 @@ def _init_container() -> Container:
     # Query Handlers
     container.register(GetGroupQueryHandler)
     container.register(GetUsersQueryHandler)
+    container.register(GetGroupsQueryHandler)
     container.register(GetUserQueryHandler)
 
     def create_message_broker() -> BaseMessageBroker:
@@ -110,7 +113,7 @@ def _init_container() -> Container:
         mediator = Mediator()
 
         # Command Handlers
-        create_chat_handler = CreateGroupCommandHandler(
+        create_group_handler = CreateGroupCommandHandler(
             _mediator=mediator, group_repository=container.resolve(BaseGroupRepository)
         )
         create_user_handler = CreateUserCommandHandler(
@@ -121,7 +124,7 @@ def _init_container() -> Container:
 
         mediator.register_command(
             CreateGroupCommand,
-            [create_chat_handler],
+            [create_group_handler],
         )
         mediator.register_command(
             CreateUserCommand,
@@ -150,6 +153,10 @@ def _init_container() -> Container:
         mediator.register_query(
             GetGroupQuery,
             container.resolve(GetGroupQueryHandler),
+        )
+        mediator.register_query(
+            GetGroupsQuery,
+            container.resolve(GetGroupsQueryHandler),
         )
         mediator.register_query(
             GetUsersQuery,

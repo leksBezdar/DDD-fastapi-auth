@@ -10,9 +10,11 @@ class Settings(BaseSettings):
     mongodb_group_collection: str = Field(
         default="group", alias="MONGODB_GROUP_COLLECTION"
     )
-
     mongodb_user_collection: str = Field(
         default="user", alias="MONGODB_USER_COLLECTION"
+    )
+    mongodb_verification_token_collection: str = Field(
+        default="verification_token", alias="MONGODB_VERIFICATION_TOKEN_COLLECTION"
     )
     new_group_event_topic: str = Field(default="new-groups-topic")
     new_user_event_topic: str = Field(default="new-users-topic")

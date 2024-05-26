@@ -10,14 +10,20 @@ from application.api.users.schemas import (
     SCreateUserIn,
     SCreateUserOut,
     SGetGroup,
+    SGetGroupsQueryResponse,
     SGetUser,
-    SGetUserQueryResponse,
+    SGetUsersQueryResponse,
 )
 from domain.exceptions.base import ApplicationException
 from logic.commands.users import CreateGroupCommand, CreateUserCommand
 from logic.init import init_container
 from logic.mediator.base import Mediator
-from logic.queries.users import GetGroupQuery, GetUserQuery, GetUsersQuery
+from logic.queries.users import (
+    GetGroupQuery,
+    GetGroupsQuery,
+    GetUserQuery,
+    GetUsersQuery,
+)
 
 
 group_router = APIRouter()
@@ -47,7 +53,7 @@ async def create_group_handler(
 
 
 @user_router.post(
-    "/{group_oid}/users",
+    "/{group_oid}/",
     status_code=status.HTTP_201_CREATED,
     responses={
         status.HTTP_201_CREATED: {"model": SCreateUserOut},
@@ -101,10 +107,40 @@ async def get_group(
 
 
 @group_router.get(
-    "/{group_oid}/users/",
+    "/",
     status_code=status.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {"model": SGetUserQueryResponse},
+        status.HTTP_200_OK: {"model": SGetGroupsQueryResponse},
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+    },
+)
+async def get_groups(
+    container: Annotated[Container, Depends(init_container)],
+    filters: GetUsersFilters = Depends(),
+):
+    """Get all groups."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        groups, count = await mediator.handle_query(
+            GetGroupsQuery(filters=filters.to_infrastructure_filters())
+        )
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+    return SGetGroupsQueryResponse(
+        count=count,
+        limit=filters.limit,
+        offset=filters.offset,
+        items=[SGetGroup.from_entity(group) for group in groups],
+    )
+
+
+@user_router.get(
+    "/{group_oid}/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": SGetUsersQueryResponse},
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
     },
 )
@@ -112,7 +148,7 @@ async def get_users(
     group_oid: str,
     container: Annotated[Container, Depends(init_container)],
     filters: GetUsersFilters = Depends(),
-) -> SGetUserQueryResponse:
+) -> SGetUsersQueryResponse:
     """Get all users from specified group."""
     mediator: Mediator = container.resolve(Mediator)
 
@@ -125,7 +161,7 @@ async def get_users(
     except ApplicationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
-    return SGetUserQueryResponse(
+    return SGetUsersQueryResponse(
         count=count,
         limit=filters.limit,
         offset=filters.offset,

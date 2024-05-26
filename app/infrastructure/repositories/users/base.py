@@ -2,7 +2,10 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
 from domain.entities.users import User, UserGroup
-from infrastructure.repositories.users.filters.users import GetUsersFilters
+from infrastructure.repositories.users.filters.users import (
+    GetGroupsFilters,
+    GetUsersFilters,
+)
 
 
 class BaseGroupRepository(ABC):
@@ -14,6 +17,11 @@ class BaseGroupRepository(ABC):
 
     @abstractmethod
     async def add_group(self, group: UserGroup) -> None: ...
+
+    @abstractmethod
+    async def get_groups(
+        self, filters: GetGroupsFilters
+    ) -> tuple[Iterable[UserGroup], int]: ...
 
 
 class BaseUserRepository(ABC):
@@ -30,3 +38,6 @@ class BaseUserRepository(ABC):
 
     @abstractmethod
     async def get_user(self, user_oid: str) -> User | None: ...
+
+    @abstractmethod
+    async def delete_user(self, user_oid: str) -> None: ...

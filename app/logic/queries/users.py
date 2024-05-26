@@ -6,7 +6,10 @@ from infrastructure.repositories.users.base import (
     BaseGroupRepository,
     BaseUserRepository,
 )
-from infrastructure.repositories.users.filters.users import GetUsersFilters
+from infrastructure.repositories.users.filters.users import (
+    GetGroupsFilters,
+    GetUsersFilters,
+)
 from logic.exceptions.users import GroupNotFoundException
 from logic.queries.base import BaseQuery, BaseQueryHandler
 
@@ -14,6 +17,11 @@ from logic.queries.base import BaseQuery, BaseQueryHandler
 @dataclass(frozen=True)
 class GetGroupQuery(BaseQuery):
     group_oid: str
+
+
+@dataclass(frozen=True)
+class GetGroupsQuery(BaseQuery):
+    filters: GetGroupsFilters
 
 
 @dataclass(frozen=True)
@@ -29,7 +37,7 @@ class GetUserQuery(BaseQuery):
 
 @dataclass(frozen=True)
 class GetUserQueryHandler(BaseQueryHandler):
-    users_repository: BaseUserRepository  # TODO pull users separately
+    users_repository: BaseUserRepository
 
     async def handle(self, query: GetUserQuery) -> User | None:
         return await self.users_repository.get_user(user_oid=query.user_oid)
@@ -38,7 +46,6 @@ class GetUserQueryHandler(BaseQueryHandler):
 @dataclass(frozen=True)
 class GetGroupQueryHandler(BaseQueryHandler):
     group_repository: BaseGroupRepository
-    users_repository: BaseUserRepository  # TODO pull users separately
 
     async def handle(self, query: GetGroupQuery) -> UserGroup:
         group = await self.group_repository.get_group_by_oid(oid=query.group_oid)
@@ -50,9 +57,15 @@ class GetGroupQueryHandler(BaseQueryHandler):
 
 
 @dataclass(frozen=True)
-class GetUsersQueryHandler(
-    BaseQueryHandler,
-):
+class GetGroupsQueryHandler(BaseQueryHandler):
+    groups_repository: BaseGroupRepository
+
+    async def handle(self, query: GetUsersQuery) -> Iterable[User]:
+        return await self.groups_repository.get_groups(filters=query.filters)
+
+
+@dataclass(frozen=True)
+class GetUsersQueryHandler(BaseQueryHandler):
     users_repository: BaseUserRepository
 
     async def handle(self, query: GetUsersQuery) -> Iterable[User]:

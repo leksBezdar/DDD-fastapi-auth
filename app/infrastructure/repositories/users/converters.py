@@ -1,5 +1,5 @@
 from typing import Any, Mapping
-from domain.entities.users import User, UserGroup
+from domain.entities.users import User, UserGroup, VerificationToken
 from domain.values.users import Email, Password, Title, Username
 
 
@@ -22,6 +22,26 @@ def convert_group_entity_to_document(group: UserGroup) -> dict:
     }
 
 
+def convert_verification_token_entity_to_document(token: VerificationToken):
+    return {
+        "oid": token.oid,
+        "token": token.token,
+        "created_at": token.created_at,
+        "expires_at": token.expires_at,
+        "user_oid": token.user_oid,
+    }
+
+
+def convert_verification_token_document_to_entity(token: VerificationToken):
+    return VerificationToken(
+        oid=token.oid,
+        token=token.token,
+        created_at=token.created_at,
+        expires_at=token.expires_at,
+        user_oid=token.user_oid,
+    )
+
+
 def convert_user_document_to_entity(user_document: Mapping[str, Any]) -> User:
     return User(
         oid=user_document["oid"],
@@ -33,9 +53,9 @@ def convert_user_document_to_entity(user_document: Mapping[str, Any]) -> User:
     )
 
 
-def convert_group_document_to_entity(group_documment: Mapping[str, Any]) -> UserGroup:
+def convert_group_document_to_entity(group_document: Mapping[str, Any]) -> UserGroup:
     return UserGroup(
-        title=Title(value=group_documment["title"]),
-        oid=group_documment["oid"],
-        created_at=group_documment["created_at"],
+        title=Title(value=group_document["title"]),
+        oid=group_document["oid"],
+        created_at=group_document["created_at"],
     )

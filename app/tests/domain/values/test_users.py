@@ -94,22 +94,15 @@ def test_create_user_group_long_title() -> None:
 
 
 def test_add_user_to_user_group(faker: Faker) -> None:
+    group_id = str(uuid4())
     username = Username(faker.text(15))
     email = Email(faker.email(15))
     password = Password(faker.text(15))
-    user = User(
-        email=email,
-        username=username,
-        password=password,
-        group_id=str(uuid4()),
-    )
+    user = User(email=email, username=username, password=password, group_id=group_id)
 
-    title = Title(faker.text(15))
-    group = UserGroup(title=title)
+    Title(faker.text(15))
 
-    group.add_user(user)
-
-    assert user in group.users
+    assert group_id == user.group_id
 
 
 def test_new_user_events(faker: Faker) -> None:

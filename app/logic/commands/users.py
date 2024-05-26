@@ -51,15 +51,14 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
         if not (group):
             raise GroupNotFoundException(oid=command.group_oid)
 
-        user = User(
+        new_user = await User.create(
             username=Username(value=command.username),
             email=Email(value=command.email),
             password=Password(value=command.password),
             group_id=command.group_oid,
         )
 
-        group.add_user(user)
-        await self.user_repository.add_user(user=user)
-        await self._mediator.publish(group.pull_events())
+        await self.user_repository.add_user(new_user)
+        await self._mediator.publish(new_user.pull_events())
 
-        return user
+        return new_user
