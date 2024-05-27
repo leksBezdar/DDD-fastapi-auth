@@ -7,7 +7,11 @@ from infrastructure.repositories.users.base import (
     BaseUserRepository,
 )
 from logic.commands.base import BaseCommand, CommandHandler
-from logic.exceptions.users import GroupAlreadyExistsException, GroupNotFoundException
+from logic.exceptions.users import (
+    GroupAlreadyExistsException,
+    GroupNotFoundException,
+    InvalidCredentialsException,
+)
 
 
 @dataclass(frozen=True)
@@ -30,6 +34,27 @@ class CreateGroupCommandHandler(CommandHandler[CreateGroupCommand, UserGroup]):
         await self._mediator.publish(new_group.pull_events())
 
         return new_group
+
+
+@dataclass(frozen=True)
+class UserLoginCommand(BaseCommand):
+    username: str
+    password: str
+
+
+@dataclass(frozen=True)
+class UserLoginCommandHandler(CommandHandler[UserLoginCommand, User]):
+    user_repository: BaseUserRepository
+
+    async def handle(self, command: UserLoginCommand) -> User:
+        user = await self.user_repository.get_user_by_username(
+            username=command.username
+        )
+        if user:
+            if user.password.as_generic_type() == command.password:
+                return user
+
+        raise InvalidCredentialsException()
 
 
 @dataclass(frozen=True)

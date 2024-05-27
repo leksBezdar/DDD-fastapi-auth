@@ -19,3 +19,10 @@ class GroupNotFoundException(LogicException):
     @property
     def message(self):
         return f"Group with {self.oid=} was not found"
+
+
+@dataclass(eq=False)
+class InvalidCredentialsException(LogicException):
+    @property
+    def message(self):
+        return "Invalid credentials were provided"

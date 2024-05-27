@@ -13,12 +13,15 @@ from application.api.users.schemas import (
     SGetGroupsQueryResponse,
     SGetUser,
     SGetUsersQueryResponse,
+    SLoginIn,
+    SLoginOut,
 )
 from domain.exceptions.base import ApplicationException
 from logic.commands.users import (
     CreateGroupCommand,
     CreateUserCommand,
     DeleteGroupCommand,
+    UserLoginCommand,
 )
 from logic.init import init_container
 from logic.mediator.base import Mediator
@@ -42,18 +45,44 @@ user_router = APIRouter()
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
     },
 )
-async def create_group_handler(
-    group: SCreateGroupIn, container: Annotated[Container, Depends(init_container)]
+async def create_group(
+    group_in: SCreateGroupIn, container: Annotated[Container, Depends(init_container)]
 ) -> SCreateGroupOut:
-    """Creates new user group."""
+    """Create new user group."""
     mediator: Mediator = container.resolve(Mediator)
 
     try:
-        group, *_ = await mediator.handle_command(CreateGroupCommand(title=group.title))
+        group, *_ = await mediator.handle_command(
+            CreateGroupCommand(title=group_in.title)
+        )
     except ApplicationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
     return SCreateGroupOut.from_entity(group)
+
+
+@user_router.post(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": SLoginOut},
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+    },
+)
+async def login(
+    login_data: SLoginIn, container: Annotated[Container, Depends(init_container)]
+) -> SLoginOut:
+    """User login."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        user, *_ = await mediator.handle_command(
+            UserLoginCommand(username=login_data.username, password=login_data.password)
+        )
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+    return SLoginOut.from_entity(user)
 
 
 @user_router.post(
@@ -64,20 +93,20 @@ async def create_group_handler(
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
     },
 )
-async def create_user_handler(
+async def create_user(
     group_oid: str,
-    user: SCreateUserIn,
+    user_in: SCreateUserIn,
     container: Annotated[Container, Depends(init_container)],
 ) -> SCreateUserOut:
-    """Creates new user."""
+    """Create new user."""
     mediator: Mediator = container.resolve(Mediator)
 
     try:
         user, *_ = await mediator.handle_command(
             CreateUserCommand(
-                email=user.email,
-                username=user.username,
-                password=user.password,
+                email=user_in.email,
+                username=user_in.username,
+                password=user_in.password,
                 group_oid=group_oid,
             )
         )

@@ -40,7 +40,7 @@ class GetUserQueryHandler(BaseQueryHandler):
     users_repository: BaseUserRepository
 
     async def handle(self, query: GetUserQuery) -> User | None:
-        return await self.users_repository.get_user(user_oid=query.user_oid)
+        return await self.users_repository.get_user_by_oid(user_oid=query.user_oid)
 
 
 @dataclass(frozen=True)

@@ -27,6 +27,8 @@ from logic.commands.users import (
     CreateUserCommandHandler,
     DeleteGroupCommand,
     DeleteGroupCommandHandler,
+    UserLoginCommand,
+    UserLoginCommandHandler,
 )
 from logic.events.users import (
     GroupDeletedEventHandler,
@@ -96,6 +98,7 @@ def _init_container() -> Container:
     # Command handlers
     container.register(CreateGroupCommandHandler)
     container.register(CreateUserCommandHandler)
+    container.register(UserLoginCommand)
 
     # Query Handlers
     container.register(GetGroupQueryHandler)
@@ -134,6 +137,9 @@ def _init_container() -> Container:
         delete_group_handler = DeleteGroupCommandHandler(
             _mediator=mediator, group_repository=container.resolve(BaseGroupRepository)
         )
+        user_login_handler = UserLoginCommandHandler(
+            _mediator=mediator, user_repository=container.resolve(BaseUserRepository)
+        )
 
         mediator.register_command(
             CreateGroupCommand,
@@ -146,6 +152,10 @@ def _init_container() -> Container:
         mediator.register_command(
             DeleteGroupCommand,
             [delete_group_handler],
+        )
+        mediator.register_command(
+            UserLoginCommand,
+            [user_login_handler],
         )
 
         # Event Handlers
