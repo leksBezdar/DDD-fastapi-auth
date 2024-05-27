@@ -21,6 +21,7 @@ from logic.commands.users import (
     CreateGroupCommand,
     CreateUserCommand,
     DeleteGroupCommand,
+    DeleteUserCommand,
     UserLoginCommand,
 )
 from logic.init import init_container
@@ -183,6 +184,24 @@ async def delete_group(
 
     try:
         await mediator.handle_command(DeleteGroupCommand(group_oid=group_oid))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@user_router.delete(
+    "/{user_oid}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
+)
+async def delete_user(
+    user_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+) -> None:
+    """Delete user."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        await mediator.handle_command(DeleteUserCommand(user_oid=user_oid))
     except ApplicationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 

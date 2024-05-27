@@ -7,6 +7,7 @@ from domain.events.users import (
     GroupDeletedEvent,
     NewGroupCreatedEvent,
     NewUserCreatedEvent,
+    UserDeletedEvent,
 )
 
 
@@ -36,6 +37,16 @@ class User(BaseEntity):
 
         return new_user
 
+    def delete(self) -> None:
+        self.register_event(
+            UserDeletedEvent(
+                user_oid=self.oid,
+                username=self.username.as_generic_type(),
+                email=self.email.as_generic_type(),
+                group_oid=self.group_id,
+            )
+        )
+
 
 @dataclass(eq=False)
 class VerificationToken(BaseEntity):
@@ -61,7 +72,7 @@ class UserGroup(BaseEntity):
 
         return new_group
 
-    def delete(self):
+    def delete(self) -> None:
         self.is_deleted = True
         self.register_event(
             GroupDeletedEvent(

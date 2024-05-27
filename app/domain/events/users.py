@@ -30,3 +30,13 @@ class GroupDeletedEvent(BaseEvent):
 
     group_oid: str
     group_title: str
+
+
+@dataclass
+class UserDeletedEvent(BaseEvent):
+    title: ClassVar[str] = "User was deleted"
+
+    user_oid: str
+    username: str
+    email: str
+    group_oid: str

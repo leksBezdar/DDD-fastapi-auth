@@ -64,7 +64,7 @@ class DeleteGroupCommand(BaseCommand):
 
 
 @dataclass(frozen=True)
-class DeleteGroupCommandHandler(CommandHandler[DeleteGroupCommand, UserGroup]):
+class DeleteGroupCommandHandler(CommandHandler[DeleteGroupCommand, None]):
     group_repository: BaseGroupRepository
 
     async def handle(self, command: DeleteGroupCommand) -> None:
@@ -75,6 +75,25 @@ class DeleteGroupCommandHandler(CommandHandler[DeleteGroupCommand, UserGroup]):
 
         group.delete()
         await self._mediator.publish(group.pull_events())
+
+
+@dataclass(frozen=True)
+class DeleteUserCommand(BaseCommand):
+    user_oid: str
+
+
+@dataclass(frozen=True)
+class DeleteUserCommandHandler(CommandHandler[DeleteUserCommand, None]):
+    user_repository: BaseUserRepository
+
+    async def handle(self, command: DeleteUserCommand) -> None:
+        user = await self.user_repository.delete_user(user_oid=command.user_oid)
+
+        if not user:
+            raise GroupNotFoundException(oid=command.user_oid)
+
+        user.delete()
+        await self._mediator.publish(user.pull_events())
 
 
 @dataclass(frozen=True)
