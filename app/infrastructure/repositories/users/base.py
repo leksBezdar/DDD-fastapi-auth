@@ -29,7 +29,9 @@ class BaseGroupRepository(ABC):
 
 class BaseUserRepository(ABC):
     @abstractmethod
-    async def check_user_exists_by_username(self, username: str) -> bool: ...
+    async def check_user_exists_by_email_and_username(
+        self, email: str, username: str
+    ) -> bool: ...
 
     @abstractmethod
     async def add_user(self, user: User) -> None: ...

@@ -62,30 +62,6 @@ async def create_group(
 
 
 @user_router.post(
-    "/",
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"model": SLoginOut},
-        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
-    },
-)
-async def login(
-    login_data: SLoginIn, container: Annotated[Container, Depends(init_container)]
-) -> SLoginOut:
-    """User login."""
-    mediator: Mediator = container.resolve(Mediator)
-
-    try:
-        user, *_ = await mediator.handle_command(
-            UserLoginCommand(username=login_data.username, password=login_data.password)
-        )
-    except ApplicationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
-
-    return SLoginOut.from_entity(user)
-
-
-@user_router.post(
     "/{group_oid}/",
     status_code=status.HTTP_201_CREATED,
     responses={
@@ -114,6 +90,30 @@ async def create_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
     return SCreateUserOut.from_entity(user)
+
+
+@user_router.post(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": SLoginOut},
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+    },
+)
+async def login(
+    login_data: SLoginIn, container: Annotated[Container, Depends(init_container)]
+) -> SLoginOut:
+    """User login."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        user, *_ = await mediator.handle_command(
+            UserLoginCommand(username=login_data.username, password=login_data.password)
+        )
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+    return SLoginOut.from_entity(user)
 
 
 @group_router.get(

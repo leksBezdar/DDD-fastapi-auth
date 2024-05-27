@@ -71,8 +71,11 @@ class MongoDBGroupRepository(BaseGroupRepository, BaseMongoDBRepository):
 
 @dataclass(frozen=True)
 class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
-    async def check_user_exists_by_username(self, username: str) -> bool:
-        return bool(await self._collection.find_one(filter={"username": username}))
+    async def check_user_exists_by_email_and_username(
+        self, email: str, username: str
+    ) -> bool:
+        filter_query = {"$or": [{"email": email}, {"username": username}]}
+        return bool(await self._collection.find_one(filter=filter_query))
 
     async def add_user(self, user: User) -> None:
         await self._collection.insert_one(convert_user_entity_to_document(user))

@@ -11,6 +11,7 @@ from logic.exceptions.users import (
     GroupAlreadyExistsException,
     GroupNotFoundException,
     InvalidCredentialsException,
+    UserAlreadyExistsException,
 )
 
 
@@ -94,6 +95,11 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
 
         if not group:
             raise GroupNotFoundException(oid=command.group_oid)
+
+        if await self.user_repository.check_user_exists_by_email_and_username(
+            email=command.email, username=command.username
+        ):
+            raise UserAlreadyExistsException()
 
         new_user = await User.create(
             username=Username(value=command.username),

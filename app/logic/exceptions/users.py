@@ -13,6 +13,13 @@ class GroupAlreadyExistsException(LogicException):
 
 
 @dataclass(eq=False)
+class UserAlreadyExistsException(LogicException):
+    @property
+    def message(self):
+        return "User already exists"
+
+
+@dataclass(eq=False)
 class GroupNotFoundException(LogicException):
     oid: str
 
