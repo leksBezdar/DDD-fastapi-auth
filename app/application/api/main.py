@@ -2,7 +2,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from application.api.lifespan import close_message_broker, init_message_broker
-from application.api.users.routers import group_router, user_router
+from application.api.users.routers import user_router
+from application.api.groups.routers import group_router
 from .healthcheck import healthcheck_router
 
 

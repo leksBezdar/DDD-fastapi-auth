@@ -1,6 +1,6 @@
 from typing import Any, Mapping
-from domain.entities.users import User, UserGroup, VerificationToken
-from domain.values.users import Email, Password, Title, Username
+from domain.entities.users import User, VerificationToken
+from domain.values.users import Email, Password, Username
 
 
 def convert_user_entity_to_document(user: User) -> dict:
@@ -12,14 +12,6 @@ def convert_user_entity_to_document(user: User) -> dict:
         "created_at": user.created_at,
         "group_oid": user.group_id,
         "is_verified": user.is_verified,
-    }
-
-
-def convert_group_entity_to_document(group: UserGroup) -> dict:
-    return {
-        "oid": group.oid,
-        "title": group.title.as_generic_type(),
-        "created_at": group.created_at,
     }
 
 
@@ -52,12 +44,4 @@ def convert_user_document_to_entity(user_document: Mapping[str, Any]) -> User:
         created_at=user_document["created_at"],
         group_id=user_document["group_oid"],
         is_verified=user_document["is_verified"],
-    )
-
-
-def convert_group_document_to_entity(group_document: Mapping[str, Any]) -> UserGroup:
-    return UserGroup(
-        title=Title(value=group_document["title"]),
-        oid=group_document["oid"],
-        created_at=group_document["created_at"],
     )

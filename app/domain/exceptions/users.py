@@ -49,18 +49,3 @@ class InvalidEmail(ApplicationException):
     @property
     def message(self) -> str:
         return f"The provided email is not valid: {self.email}"
-
-
-class EmptyGroupTitle(ApplicationException):
-    @property
-    def message(self) -> str:
-        return "Group title is empty"
-
-
-@dataclass(eq=False)
-class GroupTitleLengthIsNotValid(ApplicationException):
-    title: str
-
-    @property
-    def message(self) -> str:
-        return f"Group title length is not valid: {self.title}"

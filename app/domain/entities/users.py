@@ -3,10 +3,8 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from domain.entities.base import BaseEntity
-from domain.values.users import Title, Username, Email, Password
+from domain.values.users import Username, Email, Password
 from domain.events.users import (
-    GroupDeletedEvent,
-    GroupCreatedEvent,
     UserCreatedEvent,
     UserDeletedEvent,
     VerificationTokenCreatedEvent,
@@ -71,29 +69,3 @@ class VerificationToken(BaseEntity):
         )
 
         return new_token
-
-
-@dataclass(eq=False)
-class UserGroup(BaseEntity):
-    title: Title
-    is_deleted: bool = field(default=False, kw_only=True)
-
-    @classmethod
-    def create(cls, title: Title) -> "UserGroup":
-        new_group = cls(title=title)
-        new_group.register_event(
-            GroupCreatedEvent(
-                group_title=new_group.title.as_generic_type(),
-                group_oid=new_group.oid,
-            )
-        )
-
-        return new_group
-
-    def delete(self) -> None:
-        self.is_deleted = True
-        self.register_event(
-            GroupDeletedEvent(
-                group_oid=self.oid, group_title=self.title.as_generic_type()
-            )
-        )

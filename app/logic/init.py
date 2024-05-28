@@ -6,33 +6,35 @@ from punq import Container, Scope
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from domain.events.users import (
-    GroupDeletedEvent,
-    GroupCreatedEvent,
     UserCreatedEvent,
     UserDeletedEvent,
     VerificationTokenCreatedEvent,
 )
+from domain.events.groups import (
+    GroupDeletedEvent,
+    GroupCreatedEvent,
+)
 from infrastructure.message_brokers.base import BaseMessageBroker
 from infrastructure.message_brokers.kafka import KafkaMessageBroker
 from infrastructure.repositories.users.base import (
-    BaseGroupRepository,
     BaseUserRepository,
     BaseVerificationTokenRepository,
 )
+from infrastructure.repositories.groups.base import (
+    BaseGroupRepository,
+)
 from infrastructure.repositories.users.mongo import (
-    MongoDBGroupRepository,
     MongoDBUserRepository,
     MongoDBVerificationTokenRepository,
 )
+from infrastructure.repositories.groups.mongo import (
+    MongoDBGroupRepository,
+)
 from logic.commands.users import (
-    CreateGroupCommand,
-    CreateGroupCommandHandler,
     CreateUserCommand,
     CreateUserCommandHandler,
     CreateVerificationTokenCommand,
     CreateVerificationTokenCommandHandler,
-    DeleteGroupCommand,
-    DeleteGroupCommandHandler,
     DeleteUserCommand,
     DeleteUserCommandHandler,
     UserLoginCommand,
@@ -40,20 +42,30 @@ from logic.commands.users import (
     VerifyUserCommand,
     VerifyUserCommandHandler,
 )
+from logic.commands.groups import (
+    CreateGroupCommand,
+    CreateGroupCommandHandler,
+    DeleteGroupCommand,
+    DeleteGroupCommandHandler,
+)
 from logic.events.users import (
-    GroupDeletedEventHandler,
-    NewGroupCreatedEventHandler,
     NewUserCreatedEventHandler,
     UserDeletedEventHandler,
     VerificationTokenCreatedEventHandler,
 )
+from logic.events.groups import (
+    GroupDeletedEventHandler,
+    NewGroupCreatedEventHandler,
+)
 from logic.mediator.base import Mediator
 from logic.mediator.event import EventMediator
-from logic.queries.users import (
+from logic.queries.groups import (
     GetGroupQuery,
     GetGroupQueryHandler,
     GetGroupsQuery,
     GetGroupsQueryHandler,
+)
+from logic.queries.users import (
     GetUserQuery,
     GetUserQueryHandler,
     GetUsersQuery,

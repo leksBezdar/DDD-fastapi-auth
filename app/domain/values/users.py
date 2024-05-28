@@ -3,10 +3,8 @@ import re
 
 from domain.exceptions.users import (
     EmptyEmail,
-    EmptyGroupTitle,
     EmptyPassword,
     EmptyUsername,
-    GroupTitleLengthIsNotValid,
     InvalidEmail,
     PasswordLengthIsNotValid,
     UsernameLengthIsNotValid,
@@ -59,21 +57,6 @@ class Password(BaseValueObject):
 
         if value_length not in range(3, 16):
             raise PasswordLengthIsNotValid(self.value)
-
-    def as_generic_type(self):
-        return str(self.value)
-
-
-@dataclass(frozen=True)
-class Title(BaseValueObject):
-    value: str
-
-    def validate(self):
-        if not self.value:
-            raise EmptyGroupTitle()
-
-        if len(self.value) not in range(3, 16):
-            raise GroupTitleLengthIsNotValid(self.value)
 
     def as_generic_type(self):
         return str(self.value)

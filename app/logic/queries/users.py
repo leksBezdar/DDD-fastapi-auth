@@ -1,27 +1,14 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from domain.entities.users import User, UserGroup
+from domain.entities.users import User
 from infrastructure.repositories.users.base import (
-    BaseGroupRepository,
     BaseUserRepository,
 )
 from infrastructure.repositories.users.filters.users import (
-    GetGroupsFilters,
     GetUsersFilters,
 )
-from logic.exceptions.users import GroupNotFoundException
 from logic.queries.base import BaseQuery, BaseQueryHandler
-
-
-@dataclass(frozen=True)
-class GetGroupQuery(BaseQuery):
-    group_oid: str
-
-
-@dataclass(frozen=True)
-class GetGroupsQuery(BaseQuery):
-    filters: GetGroupsFilters
 
 
 @dataclass(frozen=True)
@@ -41,27 +28,6 @@ class GetUserQueryHandler(BaseQueryHandler):
 
     async def handle(self, query: GetUserQuery) -> User | None:
         return await self.users_repository.get_user_by_oid(user_oid=query.user_oid)
-
-
-@dataclass(frozen=True)
-class GetGroupQueryHandler(BaseQueryHandler):
-    group_repository: BaseGroupRepository
-
-    async def handle(self, query: GetGroupQuery) -> UserGroup:
-        group = await self.group_repository.get_group_by_oid(oid=query.group_oid)
-
-        if not group:
-            raise GroupNotFoundException(oid=query.group_oid)
-
-        return group
-
-
-@dataclass(frozen=True)
-class GetGroupsQueryHandler(BaseQueryHandler):
-    groups_repository: BaseGroupRepository
-
-    async def handle(self, query: GetUsersQuery) -> Iterable[User]:
-        return await self.groups_repository.get_groups(filters=query.filters)
 
 
 @dataclass(frozen=True)
