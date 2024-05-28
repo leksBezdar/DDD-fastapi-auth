@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from domain.entities.users import User, UserGroup
+from domain.entities.users import User, UserGroup, VerificationToken
 from domain.values.users import Email, Password, Title, Username
 from infrastructure.repositories.users.base import (
     BaseGroupRepository,
     BaseUserRepository,
+    BaseVerificationTokenRepository,
 )
 from logic.commands.base import BaseCommand, CommandHandler
 from logic.exceptions.users import (
@@ -12,6 +13,7 @@ from logic.exceptions.users import (
     GroupNotFoundException,
     InvalidCredentialsException,
     UserAlreadyExistsException,
+    UserNotFoundException,
 )
 
 
@@ -29,7 +31,7 @@ class CreateGroupCommandHandler(CommandHandler[CreateGroupCommand, UserGroup]):
             raise GroupAlreadyExistsException(command.title)
 
         title = Title(value=command.title)
-        new_group = UserGroup.create_group(title=title)
+        new_group = UserGroup.create(title=title)
 
         await self.group_repository.add_group(new_group)
         await self._mediator.publish(new_group.pull_events())
@@ -90,10 +92,36 @@ class DeleteUserCommandHandler(CommandHandler[DeleteUserCommand, None]):
         user = await self.user_repository.delete_user(user_oid=command.user_oid)
 
         if not user:
-            raise GroupNotFoundException(oid=command.user_oid)
+            raise UserNotFoundException(oid=command.user_oid)
 
         user.delete()
         await self._mediator.publish(user.pull_events())
+
+
+@dataclass(frozen=True)
+class CreateVerificationTokenCommand(BaseCommand):
+    user_oid: str
+
+
+@dataclass(frozen=True)
+class CreateVerificationTokenCommandHandler(
+    CommandHandler[CreateVerificationTokenCommand, None]
+):
+    users_repository: BaseUserRepository
+    tokens_repository: BaseVerificationTokenRepository
+
+    async def handle(self, command: CreateVerificationTokenCommand) -> None:
+        user = await self.users_repository.get_user_by_oid(user_oid=command.user_oid)
+        if not user:
+            raise UserNotFoundException(oid=command.user_oid)
+
+        token = VerificationToken.create(
+            email=Email(value=user.email.as_generic_type()),
+            user_oid=command.user_oid,
+        )
+        await self.tokens_repository.add_token(token=token)
+
+        await self._mediator.publish(token.pull_events())
 
 
 @dataclass(frozen=True)

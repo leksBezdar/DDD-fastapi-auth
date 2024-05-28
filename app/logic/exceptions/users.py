@@ -29,6 +29,15 @@ class GroupNotFoundException(LogicException):
 
 
 @dataclass(eq=False)
+class UserNotFoundException(LogicException):
+    oid: str
+
+    @property
+    def message(self):
+        return f"User with {self.oid=} was not found"
+
+
+@dataclass(eq=False)
 class InvalidCredentialsException(LogicException):
     @property
     def message(self):

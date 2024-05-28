@@ -20,6 +20,7 @@ from domain.exceptions.base import ApplicationException
 from logic.commands.users import (
     CreateGroupCommand,
     CreateUserCommand,
+    CreateVerificationTokenCommand,
     DeleteGroupCommand,
     DeleteUserCommand,
     UserLoginCommand,
@@ -239,7 +240,25 @@ async def get_users(
     )
 
 
-@user_router.get("/verify/{token}/")
+@user_router.post(
+    "/{user_oid}/verify/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
+)
+async def send_verification_request(
+    user_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+):
+    """Send verification request to user."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        await mediator.handle_command(CreateVerificationTokenCommand(user_oid=user_oid))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@user_router.get("/{user_id}/verify/")
 async def verify_user(
     token: str,
     container: Annotated[Container, Depends(init_container)],

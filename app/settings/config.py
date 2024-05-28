@@ -14,7 +14,10 @@ class Settings(BaseSettings):
         default="user", alias="MONGODB_USER_COLLECTION"
     )
     mongodb_verification_token_collection: str = Field(
-        default="verification_token", alias="MONGODB_VERIFICATION_TOKEN_COLLECTION"
+        default="VerificationToken", alias="MONGODB_VERIFICATION_TOKEN_COLLECTION"
+    )
+    verification_token_sent_event_topic: str = Field(
+        default="verification-token-sent-topic"
     )
     new_group_event_topic: str = Field(default="new-groups-topic")
     new_user_event_topic: str = Field(default="new-users-topic")

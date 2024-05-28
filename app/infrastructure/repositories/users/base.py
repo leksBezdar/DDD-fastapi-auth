@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from domain.entities.users import User, UserGroup
+from domain.entities.users import User, UserGroup, VerificationToken
 from infrastructure.repositories.users.filters.users import (
     GetGroupsFilters,
     GetUsersFilters,
@@ -49,3 +49,8 @@ class BaseUserRepository(ABC):
 
     @abstractmethod
     async def delete_user(self, user_oid: str) -> User | None: ...
+
+
+class BaseVerificationTokenRepository(ABC):
+    @abstractmethod
+    async def add_token(self, token: VerificationToken) -> None: ...

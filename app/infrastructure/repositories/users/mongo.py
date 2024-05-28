@@ -4,16 +4,18 @@ from dataclasses import dataclass
 
 from motor.core import AgnosticClient, AgnosticCollection
 
-from domain.entities.users import User, UserGroup
+from domain.entities.users import User, UserGroup, VerificationToken
 from infrastructure.repositories.users.base import (
     BaseGroupRepository,
     BaseUserRepository,
+    BaseVerificationTokenRepository,
 )
 from infrastructure.repositories.users.converters import (
     convert_group_document_to_entity,
     convert_group_entity_to_document,
     convert_user_document_to_entity,
     convert_user_entity_to_document,
+    convert_verification_token_entity_to_document,
 )
 from infrastructure.repositories.users.filters.users import (
     GetGroupsFilters,
@@ -81,7 +83,9 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
         await self._collection.insert_one(convert_user_entity_to_document(user))
 
     async def get_user_by_oid(self, user_oid: str) -> User | None:
-        return await self._collection.find_one(filter={"oid": user_oid})
+        user = await self._collection.find_one(filter={"oid": user_oid})
+        if user:
+            return convert_user_document_to_entity(user_document=user)
 
     async def get_user_by_username(self, username: str) -> User | None:
         user = await self._collection.find_one(filter={"username": username})
@@ -110,3 +114,13 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
         user = await self._collection.find_one_and_delete(filter={"oid": user_oid})
         if user:
             return convert_user_document_to_entity(user_document=user)
+
+
+@dataclass(frozen=True)
+class MongoDBVerificationTokenRepository(
+    BaseVerificationTokenRepository, BaseMongoDBRepository
+):
+    async def add_token(self, token: VerificationToken) -> None:
+        await self._collection.insert_one(
+            convert_verification_token_entity_to_document(token=token)
+        )

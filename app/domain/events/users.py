@@ -25,6 +25,15 @@ class NewGroupCreatedEvent(BaseEvent):
 
 
 @dataclass
+class VerificationTokenSentEvent(BaseEvent):
+    title: ClassVar[str] = "Verification token sent to user"
+
+    user_oid: str
+    email: str
+    token: str
+
+
+@dataclass
 class GroupDeletedEvent(BaseEvent):
     title: ClassVar[str] = "Group was deleted"
 

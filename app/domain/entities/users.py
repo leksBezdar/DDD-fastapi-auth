@@ -1,5 +1,6 @@
 from dataclasses import field, dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
+from uuid import uuid4
 
 from domain.entities.base import BaseEntity
 from domain.values.users import Title, Username, Email, Password
@@ -8,6 +9,7 @@ from domain.events.users import (
     NewGroupCreatedEvent,
     NewUserCreatedEvent,
     UserDeletedEvent,
+    VerificationTokenSentEvent,
 )
 
 
@@ -50,9 +52,26 @@ class User(BaseEntity):
 
 @dataclass(eq=False)
 class VerificationToken(BaseEntity):
-    token: str
     user_oid: str
-    expires_at: datetime
+    expires_at: datetime = field(
+        default_factory=lambda: datetime.now() + timedelta(hours=1),
+        kw_only=True,
+    )
+    token: str = field(
+        default_factory=lambda: str(uuid4()),
+        kw_only=True,
+    )
+
+    @classmethod
+    def create(cls, email: Email, user_oid: str) -> "VerificationToken":
+        new_token = cls(user_oid=user_oid)
+        new_token.register_event(
+            VerificationTokenSentEvent(
+                email=email.as_generic_type(), user_oid=user_oid, token=new_token.token
+            )
+        )
+
+        return new_token
 
 
 @dataclass(eq=False)
@@ -61,7 +80,7 @@ class UserGroup(BaseEntity):
     is_deleted: bool = field(default=False, kw_only=True)
 
     @classmethod
-    def create_group(cls, title: Title) -> "UserGroup":
+    def create(cls, title: Title) -> "UserGroup":
         new_group = cls(title=title)
         new_group.register_event(
             NewGroupCreatedEvent(

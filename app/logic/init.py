@@ -10,22 +10,27 @@ from domain.events.users import (
     NewGroupCreatedEvent,
     NewUserCreatedEvent,
     UserDeletedEvent,
+    VerificationTokenSentEvent,
 )
 from infrastructure.message_brokers.base import BaseMessageBroker
 from infrastructure.message_brokers.kafka import KafkaMessageBroker
 from infrastructure.repositories.users.base import (
     BaseGroupRepository,
     BaseUserRepository,
+    BaseVerificationTokenRepository,
 )
 from infrastructure.repositories.users.mongo import (
     MongoDBGroupRepository,
     MongoDBUserRepository,
+    MongoDBVerificationTokenRepository,
 )
 from logic.commands.users import (
     CreateGroupCommand,
     CreateGroupCommandHandler,
     CreateUserCommand,
     CreateUserCommandHandler,
+    CreateVerificationTokenCommand,
+    CreateVerificationTokenCommandHandler,
     DeleteGroupCommand,
     DeleteGroupCommandHandler,
     DeleteUserCommand,
@@ -38,6 +43,7 @@ from logic.events.users import (
     NewGroupCreatedEventHandler,
     NewUserCreatedEventHandler,
     UserDeletedEventHandler,
+    VerificationTokenSentEventHandler,
 )
 from logic.mediator.base import Mediator
 from logic.mediator.event import EventMediator
@@ -90,6 +96,13 @@ def _init_container() -> Container:
             mongo_db_collection_name=settings.mongodb_user_collection,
         )
 
+    def init_verification_token_mongodb_repository() -> BaseVerificationTokenRepository:
+        return MongoDBVerificationTokenRepository(
+            mongo_db_client=client,
+            mongo_db_db_name=settings.mongodb_group_database,
+            mongo_db_collection_name=settings.mongodb_verification_token_collection,
+        )
+
     container.register(
         BaseGroupRepository,
         factory=init_group_mongodb_repository,
@@ -98,10 +111,16 @@ def _init_container() -> Container:
     container.register(
         BaseUserRepository, factory=init_user_mongodb_repository, scope=Scope.singleton
     )
+    container.register(
+        BaseVerificationTokenRepository,
+        factory=init_verification_token_mongodb_repository,
+        scope=Scope.singleton,
+    )
 
     # Command handlers
     container.register(CreateGroupCommandHandler)
     container.register(CreateUserCommandHandler)
+    container.register(CreateVerificationTokenCommandHandler)
     container.register(UserLoginCommand)
 
     # Query Handlers
@@ -147,6 +166,11 @@ def _init_container() -> Container:
         user_login_handler = UserLoginCommandHandler(
             _mediator=mediator, user_repository=container.resolve(BaseUserRepository)
         )
+        create_verification_token_handler = CreateVerificationTokenCommandHandler(
+            _mediator=mediator,
+            users_repository=container.resolve(BaseUserRepository),
+            tokens_repository=container.resolve(BaseVerificationTokenRepository),
+        )
 
         mediator.register_command(
             CreateGroupCommand,
@@ -168,6 +192,9 @@ def _init_container() -> Container:
             UserLoginCommand,
             [user_login_handler],
         )
+        mediator.register_command(
+            CreateVerificationTokenCommand, [create_verification_token_handler]
+        )
 
         # Event Handlers
         new_group_created_event_handler = NewGroupCreatedEventHandler(
@@ -186,6 +213,10 @@ def _init_container() -> Container:
             broker_topic=settings.user_deleted_event_topic,
             message_broker=container.resolve(BaseMessageBroker),
         )
+        verification_token_sent_event_handler = VerificationTokenSentEventHandler(
+            broker_topic=settings.verification_token_sent_event_topic,
+            message_broker=container.resolve(BaseMessageBroker),
+        )
         mediator.register_event(
             NewGroupCreatedEvent,
             [new_group_created_event_handler],
@@ -196,6 +227,9 @@ def _init_container() -> Container:
         )
         mediator.register_event(GroupDeletedEvent, [group_deleted_event_handler])
         mediator.register_event(UserDeletedEvent, [user_deleted_event_handler])
+        mediator.register_event(
+            VerificationTokenSentEvent, [verification_token_sent_event_handler]
+        )
 
         # Query Handlers
         mediator.register_query(
