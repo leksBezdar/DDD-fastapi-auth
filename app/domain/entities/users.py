@@ -6,10 +6,10 @@ from domain.entities.base import BaseEntity
 from domain.values.users import Title, Username, Email, Password
 from domain.events.users import (
     GroupDeletedEvent,
-    NewGroupCreatedEvent,
-    NewUserCreatedEvent,
+    GroupCreatedEvent,
+    UserCreatedEvent,
     UserDeletedEvent,
-    VerificationTokenSentEvent,
+    VerificationTokenCreatedEvent,
 )
 
 
@@ -29,7 +29,7 @@ class User(BaseEntity):
             email=email, username=username, password=password, group_id=group_id
         )
         new_user.register_event(
-            NewUserCreatedEvent(
+            UserCreatedEvent(
                 username=new_user.username.as_generic_type(),
                 email=new_user.email.as_generic_type(),
                 user_oid=new_user.oid,
@@ -66,7 +66,7 @@ class VerificationToken(BaseEntity):
     def create(cls, email: Email, user_oid: str) -> "VerificationToken":
         new_token = cls(user_oid=user_oid)
         new_token.register_event(
-            VerificationTokenSentEvent(
+            VerificationTokenCreatedEvent(
                 email=email.as_generic_type(), user_oid=user_oid, token=new_token.token
             )
         )
@@ -83,7 +83,7 @@ class UserGroup(BaseEntity):
     def create(cls, title: Title) -> "UserGroup":
         new_group = cls(title=title)
         new_group.register_event(
-            NewGroupCreatedEvent(
+            GroupCreatedEvent(
                 group_title=new_group.title.as_generic_type(),
                 group_oid=new_group.oid,
             )

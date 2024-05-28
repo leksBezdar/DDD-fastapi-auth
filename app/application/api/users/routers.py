@@ -258,8 +258,9 @@ async def send_verification_request(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 
-@user_router.get("/{user_id}/verify/")
+@user_router.get("/{user_oid}/verify/{token}/")
 async def verify_user(
+    user_oid: str,
     token: str,
     container: Annotated[Container, Depends(init_container)],
 ) -> bool:

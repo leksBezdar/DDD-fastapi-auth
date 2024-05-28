@@ -7,10 +7,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from domain.events.users import (
     GroupDeletedEvent,
-    NewGroupCreatedEvent,
-    NewUserCreatedEvent,
+    GroupCreatedEvent,
+    UserCreatedEvent,
     UserDeletedEvent,
-    VerificationTokenSentEvent,
+    VerificationTokenCreatedEvent,
 )
 from infrastructure.message_brokers.base import BaseMessageBroker
 from infrastructure.message_brokers.kafka import KafkaMessageBroker
@@ -43,7 +43,7 @@ from logic.events.users import (
     NewGroupCreatedEventHandler,
     NewUserCreatedEventHandler,
     UserDeletedEventHandler,
-    VerificationTokenSentEventHandler,
+    VerificationTokenCreatedEventHandler,
 )
 from logic.mediator.base import Mediator
 from logic.mediator.event import EventMediator
@@ -213,22 +213,22 @@ def _init_container() -> Container:
             broker_topic=settings.user_deleted_event_topic,
             message_broker=container.resolve(BaseMessageBroker),
         )
-        verification_token_sent_event_handler = VerificationTokenSentEventHandler(
-            broker_topic=settings.verification_token_sent_event_topic,
+        verification_token_created_event_handler = VerificationTokenCreatedEventHandler(
+            broker_topic=settings.verification_token_event_topic,
             message_broker=container.resolve(BaseMessageBroker),
         )
         mediator.register_event(
-            NewGroupCreatedEvent,
+            GroupCreatedEvent,
             [new_group_created_event_handler],
         )
         mediator.register_event(
-            NewUserCreatedEvent,
+            UserCreatedEvent,
             [new_user_created_event_handler],
         )
         mediator.register_event(GroupDeletedEvent, [group_deleted_event_handler])
         mediator.register_event(UserDeletedEvent, [user_deleted_event_handler])
         mediator.register_event(
-            VerificationTokenSentEvent, [verification_token_sent_event_handler]
+            VerificationTokenCreatedEvent, [verification_token_created_event_handler]
         )
 
         # Query Handlers

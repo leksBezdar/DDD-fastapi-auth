@@ -6,7 +6,7 @@ from domain.events.base import BaseEvent
 
 
 @dataclass
-class NewUserCreatedEvent(BaseEvent):
+class UserCreatedEvent(BaseEvent):
     title: ClassVar[str] = "New User Added To Group"
 
     username: str
@@ -17,7 +17,7 @@ class NewUserCreatedEvent(BaseEvent):
 
 
 @dataclass
-class NewGroupCreatedEvent(BaseEvent):
+class GroupCreatedEvent(BaseEvent):
     title: ClassVar[str] = "New Group Created"
 
     group_oid: str
@@ -25,8 +25,8 @@ class NewGroupCreatedEvent(BaseEvent):
 
 
 @dataclass
-class VerificationTokenSentEvent(BaseEvent):
-    title: ClassVar[str] = "Verification token sent to user"
+class VerificationTokenCreatedEvent(BaseEvent):
+    title: ClassVar[str] = "Verification token created"
 
     user_oid: str
     email: str
