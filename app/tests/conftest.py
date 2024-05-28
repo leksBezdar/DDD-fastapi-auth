@@ -2,7 +2,8 @@ from pytest import fixture
 
 from punq import Container
 
-from infrastructure.repositories.users.base import BaseGroupRepository
+from infrastructure.repositories.users.base import BaseUserRepository
+from infrastructure.repositories.groups.base import BaseGroupRepository
 from logic.mediator.base import Mediator
 from tests.fixtures import init_dummy_container
 
@@ -20,3 +21,8 @@ def mediator(container: Container) -> Mediator:
 @fixture()
 def group_repository(container: Container) -> BaseGroupRepository:
     return container.resolve(BaseGroupRepository)
+
+
+@fixture()
+def user_repository(container: Container) -> BaseUserRepository:
+    return container.resolve(BaseUserRepository)

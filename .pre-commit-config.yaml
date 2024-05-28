@@ -30,7 +30,7 @@ repos:
         args:
           - '--config=.flake8'
           - '--max-line-length=120'
-          - '--ignore=E704, E701'
+          - '--ignore=E704, E701, E203'
         exclude: .git|__pycache__
         additional_dependencies:
           - flake8-builtins>=2.5.0
