@@ -12,6 +12,7 @@ from logic.exceptions.users import (
     GroupAlreadyExistsException,
     GroupNotFoundException,
     InvalidCredentialsException,
+    TokenNotFoundException,
     UserAlreadyExistsException,
     UserNotFoundException,
 )
@@ -104,14 +105,36 @@ class CreateVerificationTokenCommand(BaseCommand):
 
 
 @dataclass(frozen=True)
+class VerifyUserCommand(BaseCommand):
+    user_oid: str
+    token: str
+
+
+@dataclass(frozen=True)
+class VerifyUserCommandHandler(CommandHandler[VerifyUserCommand, None]):
+    user_repository: BaseUserRepository
+    token_repository: BaseVerificationTokenRepository
+
+    async def handle(self, command: VerifyUserCommand) -> None:
+        user = await self.user_repository.get_user_by_oid(user_oid=command.user_oid)
+        if not user:
+            raise UserNotFoundException(oid=command.user_oid)
+
+        if await self.token_repository.check_token_exists(token=command.token):
+            await self.user_repository.verify_user(user_oid=user.oid)
+        else:
+            raise TokenNotFoundException()
+
+
+@dataclass(frozen=True)
 class CreateVerificationTokenCommandHandler(
     CommandHandler[CreateVerificationTokenCommand, None]
 ):
-    users_repository: BaseUserRepository
-    tokens_repository: BaseVerificationTokenRepository
+    user_repository: BaseUserRepository
+    token_repository: BaseVerificationTokenRepository
 
     async def handle(self, command: CreateVerificationTokenCommand) -> None:
-        user = await self.users_repository.get_user_by_oid(user_oid=command.user_oid)
+        user = await self.user_repository.get_user_by_oid(user_oid=command.user_oid)
         if not user:
             raise UserNotFoundException(oid=command.user_oid)
 
@@ -119,7 +142,7 @@ class CreateVerificationTokenCommandHandler(
             email=Email(value=user.email.as_generic_type()),
             user_oid=command.user_oid,
         )
-        await self.tokens_repository.add_token(token=token)
+        await self.token_repository.add_token(token=token)
 
         await self._mediator.publish(token.pull_events())
 

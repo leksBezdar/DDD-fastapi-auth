@@ -110,6 +110,11 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
 
         return users, count
 
+    async def verify_user(self, user_oid: str) -> None:
+        await self._collection.update_one(
+            filter={"oid": user_oid}, update={"$set": {"is_verified": True}}
+        )
+
     async def delete_user(self, user_oid: str) -> User | None:
         user = await self._collection.find_one_and_delete(filter={"oid": user_oid})
         if user:
@@ -124,3 +129,6 @@ class MongoDBVerificationTokenRepository(
         await self._collection.insert_one(
             convert_verification_token_entity_to_document(token=token)
         )
+
+    async def check_token_exists(self, token: str) -> bool:
+        return bool(await self._collection.find_one_and_delete(filter={"token": token}))

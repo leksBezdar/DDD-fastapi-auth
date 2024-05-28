@@ -11,6 +11,7 @@ def convert_user_entity_to_document(user: User) -> dict:
         "password": user.password.as_generic_type(),
         "created_at": user.created_at,
         "group_oid": user.group_id,
+        "is_verified": user.is_verified,
     }
 
 
@@ -50,6 +51,7 @@ def convert_user_document_to_entity(user_document: Mapping[str, Any]) -> User:
         password=Password(value=user_document["password"]),
         created_at=user_document["created_at"],
         group_id=user_document["group_oid"],
+        is_verified=user_document["is_verified"],
     )
 
 

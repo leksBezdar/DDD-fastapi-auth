@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import ClassVar
-from uuid import uuid4
 
 from domain.events.base import BaseEvent
 
@@ -13,7 +12,6 @@ class UserCreatedEvent(BaseEvent):
     user_oid: str
     group_oid: str
     email: str
-    token: str = str(uuid4())
 
 
 @dataclass

@@ -37,6 +37,8 @@ from logic.commands.users import (
     DeleteUserCommandHandler,
     UserLoginCommand,
     UserLoginCommandHandler,
+    VerifyUserCommand,
+    VerifyUserCommandHandler,
 )
 from logic.events.users import (
     GroupDeletedEventHandler,
@@ -166,10 +168,15 @@ def _init_container() -> Container:
         user_login_handler = UserLoginCommandHandler(
             _mediator=mediator, user_repository=container.resolve(BaseUserRepository)
         )
+        verify_user_handler = VerifyUserCommandHandler(
+            _mediator=mediator,
+            user_repository=container.resolve(BaseUserRepository),
+            token_repository=container.resolve(BaseVerificationTokenRepository),
+        )
         create_verification_token_handler = CreateVerificationTokenCommandHandler(
             _mediator=mediator,
-            users_repository=container.resolve(BaseUserRepository),
-            tokens_repository=container.resolve(BaseVerificationTokenRepository),
+            user_repository=container.resolve(BaseUserRepository),
+            token_repository=container.resolve(BaseVerificationTokenRepository),
         )
 
         mediator.register_command(
@@ -191,6 +198,10 @@ def _init_container() -> Container:
         mediator.register_command(
             UserLoginCommand,
             [user_login_handler],
+        )
+        mediator.register_command(
+            VerifyUserCommand,
+            [verify_user_handler],
         )
         mediator.register_command(
             CreateVerificationTokenCommand, [create_verification_token_handler]

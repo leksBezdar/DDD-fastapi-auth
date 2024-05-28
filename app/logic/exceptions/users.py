@@ -38,6 +38,13 @@ class UserNotFoundException(LogicException):
 
 
 @dataclass(eq=False)
+class TokenNotFoundException(LogicException):
+    @property
+    def message(self):
+        return "Token was not found"
+
+
+@dataclass(eq=False)
 class InvalidCredentialsException(LogicException):
     @property
     def message(self):

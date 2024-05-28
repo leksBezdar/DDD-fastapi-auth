@@ -36,7 +36,6 @@ class User(BaseEntity):
                 group_oid=group_id,
             )
         )
-
         return new_user
 
     def delete(self) -> None:

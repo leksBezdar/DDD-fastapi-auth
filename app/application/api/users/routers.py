@@ -24,13 +24,13 @@ from logic.commands.users import (
     DeleteGroupCommand,
     DeleteUserCommand,
     UserLoginCommand,
+    VerifyUserCommand,
 )
 from logic.init import init_container
 from logic.mediator.base import Mediator
 from logic.queries.users import (
     GetGroupQuery,
     GetGroupsQuery,
-    GetUserQuery,
     GetUsersQuery,
 )
 
@@ -258,16 +258,19 @@ async def send_verification_request(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
 
-@user_router.get("/{user_oid}/verify/{token}/")
+@user_router.get(
+    "/{user_oid}/verify/{token}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
+)
 async def verify_user(
     user_oid: str,
     token: str,
     container: Annotated[Container, Depends(init_container)],
-) -> bool:
+):
     mediator: Mediator = container.resolve(Mediator)
 
     try:
-        user = await mediator.handle_query(GetUserQuery(user_oid=token))
+        await mediator.handle_command(VerifyUserCommand(user_oid=user_oid, token=token))
     except ApplicationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
-    return bool(user)
