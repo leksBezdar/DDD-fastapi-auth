@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
+from application.api.common.filters.base import BaseGetAllFilters
 from infrastructure.repositories.users.filters.users import (
     GetUsersFilters as GetUsersInfrastructureFilters,
 )
 
 
 @dataclass
-class GetUsersFilters:
+class GetUsersFilters(BaseGetAllFilters):
     limit: int = 10
     offset: int = 0
 
