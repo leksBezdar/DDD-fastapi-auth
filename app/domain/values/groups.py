@@ -7,7 +7,7 @@ from domain.exceptions.groups import (
 from domain.values.base import BaseValueObject
 
 
-@dataclass(frozen=True)
+@dataclass
 class Title(BaseValueObject):
     value: str
 

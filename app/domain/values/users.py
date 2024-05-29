@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 import re
+from typing import Self
+import bcrypt
 
 from domain.exceptions.users import (
     EmptyEmail,
@@ -12,7 +14,7 @@ from domain.exceptions.users import (
 from domain.values.base import BaseValueObject
 
 
-@dataclass(frozen=True)
+@dataclass
 class Username(BaseValueObject):
     value: str
 
@@ -29,7 +31,7 @@ class Username(BaseValueObject):
         return str(self.value)
 
 
-@dataclass(frozen=True)
+@dataclass
 class Email(BaseValueObject):
     value: str
 
@@ -45,7 +47,7 @@ class Email(BaseValueObject):
         return str(self.value)
 
 
-@dataclass(frozen=True)
+@dataclass
 class Password(BaseValueObject):
     value: str
 
@@ -56,7 +58,13 @@ class Password(BaseValueObject):
         value_length = len(self.value)
 
         if value_length not in range(3, 16):
-            raise PasswordLengthIsNotValid(self.value)
+            raise PasswordLengthIsNotValid(value_length)
 
     def as_generic_type(self):
         return str(self.value)
+
+    def as_hash(self) -> Self:
+        self.value = bcrypt.hashpw(self.value.encode("utf-8"), bcrypt.gensalt()).decode(
+            "utf-8"
+        )
+        return self

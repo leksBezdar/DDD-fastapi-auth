@@ -31,6 +31,11 @@ class BaseUserRepository(ABC):
     async def verify_user(self, user_oid: str) -> None: ...
 
     @abstractmethod
+    async def check_password_is_valid(
+        self, password: str, hashed_password: str
+    ) -> bool: ...
+
+    @abstractmethod
     async def delete_user(self, user_oid: str) -> User | None: ...
 
 

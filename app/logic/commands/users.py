@@ -35,9 +35,10 @@ class UserLoginCommandHandler(CommandHandler[UserLoginCommand, User]):
         user = await self.user_repository.get_user_by_username(
             username=command.username
         )
-        if user:
-            if user.password.as_generic_type() == command.password:
-                return user
+        if user and await self.user_repository.check_password_is_valid(
+            password=command.password, hashed_password=user.password
+        ):
+            return user
 
         raise InvalidCredentialsException()
 
@@ -136,7 +137,7 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
         new_user = await User.create(
             username=Username(value=command.username),
             email=Email(value=command.email),
-            password=Password(value=command.password),
+            password=Password(value=command.password).as_hash(),
             group_id=command.group_oid,
         )
 

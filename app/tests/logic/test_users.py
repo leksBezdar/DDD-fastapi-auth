@@ -1,11 +1,11 @@
 import pytest
 
 
-from domain.entities.users import UserGroup
-from domain.values.users import Title
-from infrastructure.repositories.users.base import BaseGroupRepository
-from logic.commands.users import CreateGroupCommand
-from logic.exceptions.users import GroupAlreadyExistsException
+from domain.entities.groups import UserGroup
+from domain.values.groups import Title
+from infrastructure.repositories.groups.base import BaseGroupRepository
+from logic.commands.groups import CreateGroupCommand
+from logic.exceptions.groups import GroupAlreadyExistsException
 from logic.mediator.base import Mediator
 from faker import Faker
 

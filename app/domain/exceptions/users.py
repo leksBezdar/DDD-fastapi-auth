@@ -28,11 +28,11 @@ class EmptyPassword(ApplicationException):
 
 @dataclass(eq=False)
 class PasswordLengthIsNotValid(ApplicationException):
-    password: str
+    length: str
 
     @property
     def message(self) -> str:
-        return f"Password length is not valid: {len(self.password)}"
+        return f"Password length is not valid: {self.length}"
 
 
 @dataclass(eq=False)

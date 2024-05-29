@@ -74,5 +74,4 @@ class SGetUser(BaseModel):
         )
 
 
-class SGetUsersQueryResponse(SBaseQueryResponse):
-    items: list[SGetUser]
+class SGetUsersQueryResponse(SBaseQueryResponse[list[SGetUser]]): ...

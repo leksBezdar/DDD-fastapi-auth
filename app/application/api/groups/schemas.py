@@ -32,5 +32,4 @@ class SGetGroup(BaseModel):
         )
 
 
-class SGetGroupsQueryResponse(SBaseQueryResponse):
-    items: list[SGetGroup]
+class SGetGroupsQueryResponse(SBaseQueryResponse[list[SGetGroup]]): ...

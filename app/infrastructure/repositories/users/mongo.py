@@ -1,6 +1,8 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 
+import bcrypt
+
 from domain.entities.users import User, VerificationToken
 from infrastructure.repositories.common.base_repository import BaseMongoDBRepository
 from infrastructure.repositories.users.base import (
@@ -60,6 +62,11 @@ class MongoDBUserRepository(BaseUserRepository, BaseMongoDBRepository):
         await self._collection.update_one(
             filter={"oid": user_oid}, update={"$set": {"is_verified": True}}
         )
+
+    async def check_password_is_valid(
+        self, password: str, hashed_password: str
+    ) -> bool:
+        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
     async def delete_user(self, user_oid: str) -> User | None:
         user = await self._collection.find_one_and_delete(filter={"oid": user_oid})
