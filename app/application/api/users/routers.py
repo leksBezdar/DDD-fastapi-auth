@@ -3,16 +3,19 @@ from punq import Container
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from application.api.schemas import SErrorMessage
-from application.api.users.filters import GetUsersFilters
 from application.api.users.schemas import (
     SCreateUserIn,
     SCreateUserOut,
     SGetUser,
-    SGetUsersQueryResponse,
     SLoginIn,
     SLoginOut,
 )
 from domain.exceptions.base import ApplicationException
+from domain.exceptions.users import (
+    InvalidEmail,
+    InvalidPasswordLength,
+    InvalidUsernameLength,
+)
 from logic.commands.users import (
     CreateUserCommand,
     CreateVerificationTokenCommand,
@@ -20,10 +23,16 @@ from logic.commands.users import (
     UserLoginCommand,
     VerifyUserCommand,
 )
+from logic.exceptions.users import (
+    InvalidCredentialsException,
+    TokenNotFoundException,
+    UserAlreadyExistsException,
+    UserNotFoundException,
+)
 from logic.init import init_container
 from logic.mediator.base import Mediator
 from logic.queries.users import (
-    GetUsersQuery,
+    GetUserQuery,
 )
 
 
@@ -36,6 +45,10 @@ user_router = APIRouter()
     responses={
         status.HTTP_201_CREATED: {"model": SCreateUserOut},
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+        status.HTTP_409_CONFLICT: {"model": UserAlreadyExistsException},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "model": InvalidEmail | InvalidUsernameLength | InvalidPasswordLength
+        },
     },
 )
 async def create_user(
@@ -56,7 +69,7 @@ async def create_user(
             )
         )
     except ApplicationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message)
 
     return SCreateUserOut.from_entity(user)
 
@@ -67,6 +80,7 @@ async def create_user(
     responses={
         status.HTTP_200_OK: {"model": SLoginOut},
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+        status.HTTP_401_UNAUTHORIZED: {"model": InvalidCredentialsException},
     },
 )
 async def login(
@@ -85,61 +99,13 @@ async def login(
     return SLoginOut.from_entity(user)
 
 
-@user_router.delete(
-    "/{user_oid}/",
-    status_code=status.HTTP_204_NO_CONTENT,
-    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
-)
-async def delete_user(
-    user_oid: str,
-    container: Annotated[Container, Depends(init_container)],
-) -> None:
-    """Delete user."""
-    mediator: Mediator = container.resolve(Mediator)
-
-    try:
-        await mediator.handle_command(DeleteUserCommand(user_oid=user_oid))
-    except ApplicationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
-
-
-@user_router.get(
-    "/{group_oid}/",
-    status_code=status.HTTP_200_OK,
-    responses={
-        status.HTTP_200_OK: {"model": SGetUsersQueryResponse},
-        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
-    },
-)
-async def get_users(
-    group_oid: str,
-    container: Annotated[Container, Depends(init_container)],
-    filters: GetUsersFilters = Depends(),
-) -> SGetUsersQueryResponse:
-    """Get all users from specified group."""
-    mediator: Mediator = container.resolve(Mediator)
-
-    try:
-        users, count = await mediator.handle_query(
-            GetUsersQuery(
-                group_oid=group_oid, filters=filters.to_infrastructure_filters()
-            )
-        )
-    except ApplicationException as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
-
-    return SGetUsersQueryResponse(
-        count=count,
-        limit=filters.limit,
-        offset=filters.offset,
-        items=[SGetUser.from_entity(user) for user in users],
-    )
-
-
 @user_router.post(
     "/{user_oid}/verify/",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+        status.HTTP_404_NOT_FOUND: {"model": UserNotFoundException},
+    },
 )
 async def send_verification_request(
     user_oid: str,
@@ -155,9 +121,37 @@ async def send_verification_request(
 
 
 @user_router.get(
+    "/{user_oid}/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": SGetUser},
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+        status.HTTP_404_NOT_FOUND: {"model": UserNotFoundException},
+    },
+)
+async def get_user(
+    user_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+):
+    """Get user user info."""
+    mediator: Mediator = container.resolve(Mediator)
+    try:
+        user = await mediator.handle_query(GetUserQuery(user_oid=user_oid))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+    return SGetUser.from_entity(user)
+
+
+@user_router.get(
     "/{user_oid}/verify/{token}/",
     status_code=status.HTTP_204_NO_CONTENT,
-    responses={status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage}},
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+        status.HTTP_404_NOT_FOUND: {
+            "model": UserNotFoundException | TokenNotFoundException
+        },
+    },
 )
 async def verify_user(
     user_oid: str,
@@ -168,5 +162,26 @@ async def verify_user(
 
     try:
         await mediator.handle_command(VerifyUserCommand(user_oid=user_oid, token=token))
+    except ApplicationException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@user_router.delete(
+    "/{user_oid}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
+        status.HTTP_404_NOT_FOUND: {"model": UserNotFoundException},
+    },
+)
+async def delete_user(
+    user_oid: str,
+    container: Annotated[Container, Depends(init_container)],
+) -> None:
+    """Delete user."""
+    mediator: Mediator = container.resolve(Mediator)
+
+    try:
+        await mediator.handle_command(DeleteUserCommand(user_oid=user_oid))
     except ApplicationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)

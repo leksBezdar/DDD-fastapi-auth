@@ -5,7 +5,7 @@ from faker import Faker
 from domain.entities.groups import UserGroup
 from domain.exceptions.groups import (
     EmptyGroupTitle,
-    GroupTitleLengthIsNotValid,
+    InvalidGroupTitleLength,
 )
 from domain.values.groups import Title
 
@@ -25,10 +25,10 @@ def test_create_user_group_empty_title() -> None:
 
 
 def test_create_user_group_short_title(faker: Faker) -> None:
-    with pytest.raises(GroupTitleLengthIsNotValid):
+    with pytest.raises(InvalidGroupTitleLength):
         Title(faker.word(ext_word_list=["ac", "ba"]))
 
 
 def test_create_user_group_long_title(faker: Faker) -> None:
-    with pytest.raises(GroupTitleLengthIsNotValid):
+    with pytest.raises(InvalidGroupTitleLength):
         Title(faker.text(15) * 50)

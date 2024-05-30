@@ -8,8 +8,8 @@ from domain.exceptions.users import (
     EmptyPassword,
     EmptyUsername,
     InvalidEmail,
-    PasswordLengthIsNotValid,
-    UsernameLengthIsNotValid,
+    InvalidPasswordLength,
+    InvalidUsernameLength,
 )
 from domain.values.base import BaseValueObject
 
@@ -25,7 +25,7 @@ class Username(BaseValueObject):
         value_length = len(self.value)
 
         if value_length not in range(3, 16):
-            raise UsernameLengthIsNotValid(self.value)
+            raise InvalidUsernameLength(self.value)
 
     def as_generic_type(self) -> str:
         return str(self.value)
@@ -58,7 +58,7 @@ class Password(BaseValueObject):
         value_length = len(self.value)
 
         if value_length not in range(3, 16):
-            raise PasswordLengthIsNotValid(value_length)
+            raise InvalidPasswordLength(value_length)
 
     def as_generic_type(self):
         return str(self.value)

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from domain.exceptions.groups import (
     EmptyGroupTitle,
-    GroupTitleLengthIsNotValid,
+    InvalidGroupTitleLength,
 )
 from domain.values.base import BaseValueObject
 
@@ -16,7 +16,7 @@ class Title(BaseValueObject):
             raise EmptyGroupTitle()
 
         if len(self.value) not in range(3, 16):
-            raise GroupTitleLengthIsNotValid(self.value)
+            raise InvalidGroupTitleLength(self.value)
 
     def as_generic_type(self):
         return str(self.value)

@@ -8,6 +8,7 @@ from infrastructure.repositories.users.base import (
 from infrastructure.repositories.users.filters.users import (
     GetUsersFilters,
 )
+from logic.exceptions.users import UserNotFoundException
 from logic.queries.base import BaseQuery, BaseQueryHandler
 
 
@@ -26,8 +27,12 @@ class GetUserQuery(BaseQuery):
 class GetUserQueryHandler(BaseQueryHandler):
     users_repository: BaseUserRepository
 
-    async def handle(self, query: GetUserQuery) -> User | None:
-        return await self.users_repository.get_user_by_oid(user_oid=query.user_oid)
+    async def handle(self, query: GetUserQuery) -> User:
+        user = await self.users_repository.get_user_by_oid(user_oid=query.user_oid)
+        if not user:
+            raise UserNotFoundException(oid=query.user_oid)
+
+        return user
 
 
 @dataclass(frozen=True)

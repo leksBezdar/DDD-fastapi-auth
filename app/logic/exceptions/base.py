@@ -6,5 +6,5 @@ from domain.exceptions.base import ApplicationException
 @dataclass(eq=False)
 class LogicException(ApplicationException):
     @property
-    def message(self):
+    def message(self) -> str:
         return "Logic exeption has occurred"

@@ -8,8 +8,8 @@ from domain.exceptions.users import (
     EmptyPassword,
     EmptyUsername,
     InvalidEmail,
-    PasswordLengthIsNotValid,
-    UsernameLengthIsNotValid,
+    InvalidPasswordLength,
+    InvalidUsernameLength,
 )
 from domain.values.users import Email, Password, Username
 
@@ -38,12 +38,12 @@ def test_create_user_empty_username() -> None:
 
 
 def test_create_user_short_username(faker: Faker) -> None:
-    with pytest.raises(UsernameLengthIsNotValid):
+    with pytest.raises(InvalidUsernameLength):
         Username(faker.word(ext_word_list=["ac", "ba"]))
 
 
 def test_create_user_long_username(faker: Faker) -> None:
-    with pytest.raises(UsernameLengthIsNotValid):
+    with pytest.raises(InvalidUsernameLength):
         Username(faker.text(15) * 15)
 
 
@@ -53,12 +53,12 @@ def test_create_user_empty_password() -> None:
 
 
 def test_create_user_short_password(faker: Faker) -> None:
-    with pytest.raises(PasswordLengthIsNotValid):
+    with pytest.raises(InvalidPasswordLength):
         Password(faker.word(ext_word_list=["ac", "ba"]))
 
 
 def test_create_user_long_password(faker: Faker) -> None:
-    with pytest.raises(PasswordLengthIsNotValid):
+    with pytest.raises(InvalidPasswordLength):
         Password(faker.text(15) * 15)
 
 
