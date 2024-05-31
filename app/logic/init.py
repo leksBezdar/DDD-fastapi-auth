@@ -30,6 +30,8 @@ from infrastructure.repositories.users.mongo import (
 from infrastructure.repositories.groups.mongo import (
     MongoDBGroupRepository,
 )
+from infrastructure.security.cookies.base import BaseCookieManager
+from infrastructure.security.cookies.pyjwt import PyJWTCookieManager
 from logic.commands.users import (
     CreateUserCommand,
     CreateUserCommandHandler,
@@ -66,6 +68,8 @@ from logic.queries.groups import (
     GetGroupsQueryHandler,
 )
 from logic.queries.users import (
+    GetTokensQuery,
+    GetTokensQueryHandler,
     GetUserQuery,
     GetUserQueryHandler,
     GetUsersQuery,
@@ -117,6 +121,14 @@ def _init_container() -> Container:
             mongo_db_collection_name=settings.mongodb_verification_token_collection,
         )
 
+    def init_cookie_manager() -> BaseCookieManager:
+        return PyJWTCookieManager(
+            _token_secret_key=settings.token_secret_key,
+            _algorithm=settings.algorithm,
+            _access_token_expire_minutes=settings.access_token_expire_minutes,
+            _refresh_token_expire_days=settings.refresh_token_expire_days,
+        )
+
     container.register(
         BaseGroupRepository,
         factory=init_group_mongodb_repository,
@@ -130,6 +142,9 @@ def _init_container() -> Container:
         factory=init_verification_token_mongodb_repository,
         scope=Scope.singleton,
     )
+    container.register(
+        BaseCookieManager, factory=init_cookie_manager, scope=Scope.singleton
+    )
 
     # Command handlers
     container.register(CreateGroupCommandHandler)
@@ -142,6 +157,7 @@ def _init_container() -> Container:
     container.register(GetUsersQueryHandler)
     container.register(GetGroupsQueryHandler)
     container.register(GetUserQueryHandler)
+    container.register(GetTokensQueryHandler)
 
     def create_message_broker() -> BaseMessageBroker:
         return KafkaMessageBroker(
@@ -270,6 +286,10 @@ def _init_container() -> Container:
         mediator.register_query(
             GetUserQuery,
             container.resolve(GetUserQueryHandler),
+        )
+
+        mediator.register_query(
+            GetTokensQuery, container.resolve(GetTokensQueryHandler)
         )
 
         return mediator

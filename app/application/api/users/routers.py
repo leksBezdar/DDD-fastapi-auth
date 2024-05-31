@@ -1,6 +1,6 @@
 from typing import Annotated
 from punq import Container
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from application.api.schemas import SErrorMessage
 from application.api.users.schemas import (
@@ -32,8 +32,11 @@ from logic.exceptions.users import (
 from logic.init import init_container
 from logic.mediator.base import Mediator
 from logic.queries.users import (
+    GetTokensQuery,
     GetUserQuery,
+    Tokens,
 )
+from settings.config import Settings
 
 
 user_router = APIRouter()
@@ -84,10 +87,13 @@ async def create_user(
     },
 )
 async def login(
-    login_data: SLoginIn, container: Annotated[Container, Depends(init_container)]
+    login_data: SLoginIn,
+    container: Annotated[Container, Depends(init_container)],
+    response: Response,
 ) -> SLoginOut:
     """User login."""
     mediator: Mediator = container.resolve(Mediator)
+    settings: Settings = container.resolve(Settings)
 
     try:
         user, *_ = await mediator.handle_command(
@@ -95,6 +101,20 @@ async def login(
         )
     except ApplicationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+    else:
+        tokens: Tokens = await mediator.handle_query(
+            GetTokensQuery(username=login_data.username)
+        )
+        response.set_cookie(
+            "access_token",
+            tokens.access_token,
+            max_age=settings.access_token_expire_minutes * 60,
+        )
+        response.set_cookie(
+            "refresh_token",
+            tokens.refresh_token,
+            max_age=settings.refresh_token_expire_days * 60 * 24,
+        )
 
     return SLoginOut.from_entity(user)
 

@@ -17,11 +17,11 @@ class UserAlreadyExistsException(LogicException):
 
 @dataclass(eq=False)
 class UserNotFoundException(LogicException):
-    oid: str
+    value: str
 
     @property
     def message(self) -> str:
-        return f"User with {self.oid=} was not found"
+        return f"User with {self.value=} was not found"
 
     @property
     def status_code(self) -> int:

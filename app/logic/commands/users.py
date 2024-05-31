@@ -56,7 +56,7 @@ class DeleteUserCommandHandler(CommandHandler[DeleteUserCommand, None]):
         user = await self.user_repository.delete_user(user_oid=command.user_oid)
 
         if not user:
-            raise UserNotFoundException(oid=command.user_oid)
+            raise UserNotFoundException(value=command.user_oid)
 
         user.delete()
         await self._mediator.publish(user.pull_events())
@@ -81,7 +81,7 @@ class VerifyUserCommandHandler(CommandHandler[VerifyUserCommand, None]):
     async def handle(self, command: VerifyUserCommand) -> None:
         user = await self.user_repository.get_user_by_oid(user_oid=command.user_oid)
         if not user:
-            raise UserNotFoundException(oid=command.user_oid)
+            raise UserNotFoundException(value=command.user_oid)
 
         if await self.token_repository.check_token_exists(token=command.token):
             await self.user_repository.verify_user(user_oid=user.oid)
@@ -99,7 +99,7 @@ class CreateVerificationTokenCommandHandler(
     async def handle(self, command: CreateVerificationTokenCommand) -> None:
         user = await self.user_repository.get_user_by_oid(user_oid=command.user_oid)
         if not user:
-            raise UserNotFoundException(oid=command.user_oid)
+            raise UserNotFoundException(value=command.user_oid)
 
         token = VerificationToken.create(
             email=Email(value=user.email.as_generic_type()),
