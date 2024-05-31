@@ -11,7 +11,9 @@ class InMemoryGroupRepository(BaseGroupRepository):
     _saved_groups: list[UserGroup] = field(default_factory=list, kw_only=True)
 
     async def check_group_exists_by_title(self, title: str) -> bool:
-        return any(group.title == title for group in self._saved_groups)
+        return any(
+            group.title.as_generic_type() == title for group in self._saved_groups
+        )
 
     async def get_group_by_oid(self, group_oid: str) -> UserGroup | None:
         for group in self._saved_groups:
@@ -25,6 +27,7 @@ class InMemoryGroupRepository(BaseGroupRepository):
     async def get_groups(
         self, filters: GetGroupsFilters
     ) -> tuple[Iterable[UserGroup], int]:
+        raise Exception(self._saved_groups)
         filtered_groups = [
             group for group in self._saved_groups if not group.is_deleted
         ]

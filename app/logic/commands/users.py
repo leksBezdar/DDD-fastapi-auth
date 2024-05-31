@@ -124,7 +124,9 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
     group_repository: BaseGroupRepository
 
     async def handle(self, command: CreateUserCommand) -> User:
-        group = await self.group_repository.get_group_by_oid(oid=command.group_oid)
+        group = await self.group_repository.get_group_by_oid(
+            group_oid=command.group_oid
+        )
 
         if not group:
             raise GroupNotFoundException(oid=command.group_oid)

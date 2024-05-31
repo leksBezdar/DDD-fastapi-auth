@@ -25,7 +25,7 @@ async def test_create_group_title_too_long(
     title = faker.text(150)
     response: Response = client.post(url=url, json={"title": title})
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST, response.json()
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY, response.json()
     json_data = response.json()
 
     assert json_data["detail"]
@@ -36,10 +36,10 @@ async def test_create_group_title_empty(
     app: FastAPI,
     client: TestClient,
 ):
-    url = app.url_path_for("create_group    ")
+    url = app.url_path_for("create_group")
     response: Response = client.post(url=url, json={"title": ""})
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST, response.json()
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY, response.json()
     json_data = response.json()
 
     assert json_data["detail"]

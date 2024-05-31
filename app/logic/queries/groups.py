@@ -28,7 +28,7 @@ class GetGroupQueryHandler(BaseQueryHandler):
     group_repository: BaseGroupRepository
 
     async def handle(self, query: GetGroupQuery) -> UserGroup:
-        group = await self.group_repository.get_group_by_oid(oid=query.group_oid)
+        group = await self.group_repository.get_group_by_oid(group_oid=query.group_oid)
 
         if not group:
             raise GroupNotFoundException(oid=query.group_oid)

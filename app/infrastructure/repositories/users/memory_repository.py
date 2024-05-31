@@ -14,7 +14,8 @@ class InMemoryUserRepository(BaseUserRepository):
         self, email: str, username: str
     ) -> bool:
         return any(
-            user.email == email or user.username == username
+            user.email.as_generic_type() == email
+            or user.username.as_generic_type() == username
             for user in self._saved_users
         )
 
@@ -43,6 +44,10 @@ class InMemoryUserRepository(BaseUserRepository):
     async def verify_user(self, user_oid: str) -> None:
         user = await self.get_user_by_oid(user_oid)
         user.is_verified = True
+
+    async def check_password_is_valid(
+        self, password: str, hashed_password: str
+    ) -> bool: ...
 
     async def delete_user(self, user_oid: str) -> User | None:
         for user in self._saved_users:

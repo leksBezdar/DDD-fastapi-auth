@@ -18,8 +18,8 @@ from infrastructure.repositories.groups.filters.groups import (
 
 @dataclass(frozen=True)
 class MongoDBGroupRepository(BaseGroupRepository, BaseMongoDBRepository):
-    async def get_group_by_oid(self, oid: str) -> UserGroup | None:
-        group_document = await self._collection.find_one(filter={"oid": oid})
+    async def get_group_by_oid(self, group_oid: str) -> UserGroup | None:
+        group_document = await self._collection.find_one(filter={"oid": group_oid})
 
         if not group_document:
             return None
