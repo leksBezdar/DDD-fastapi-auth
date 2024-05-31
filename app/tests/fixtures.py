@@ -1,5 +1,7 @@
 from punq import Container, Scope
 
+from infrastructure.message_brokers.base import BaseMessageBroker
+from infrastructure.message_brokers.dummy_kafka import DummyKafkaMessageBroker
 from infrastructure.repositories.groups.base import BaseGroupRepository
 from infrastructure.repositories.users.base import BaseUserRepository
 from infrastructure.repositories.users.memory_repository import InMemoryUserRepository
@@ -14,6 +16,9 @@ def init_dummy_container() -> Container:
     )
     container.register(
         BaseUserRepository, InMemoryUserRepository, scope=Scope.singleton
+    )
+    container.register(
+        BaseMessageBroker, DummyKafkaMessageBroker, scope=Scope.singleton
     )
 
     return container
