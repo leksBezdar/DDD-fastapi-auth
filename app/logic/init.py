@@ -31,7 +31,7 @@ from infrastructure.repositories.groups.mongo import (
     MongoDBGroupRepository,
 )
 from infrastructure.security.cookies.base import BaseCookieManager
-from infrastructure.security.cookies.pyjwt import PyJWTCookieManager
+from infrastructure.security.cookies.jwt import PyJWTCookieManager
 from logic.commands.users import (
     CreateUserCommand,
     CreateUserCommandHandler,

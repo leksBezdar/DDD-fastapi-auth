@@ -10,14 +10,15 @@ class PyJWTCookieManager(BaseCookieManager):
     async def create_access_token(self, user_oid: str) -> str:
         to_encode = {
             "sub": user_oid,
-            "exp": datetime.now(UTC) + timedelta(self._access_token_expire_minutes),
+            "exp": datetime.now(UTC)
+            + timedelta(minutes=self._access_token_expire_minutes),
         }
         return jwt.encode(to_encode, self._token_secret_key, algorithm=self._algorithm)
 
     async def create_refresh_token(self, user_oid: str) -> str:
         to_encode = {
             "sub": user_oid,
-            "exp": datetime.now(UTC) + timedelta(self._refresh_token_expire_days),
+            "exp": datetime.now(UTC) + timedelta(days=self._refresh_token_expire_days),
         }
         return jwt.encode(to_encode, self._token_secret_key, algorithm=self._algorithm)
 

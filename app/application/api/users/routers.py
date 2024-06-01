@@ -119,6 +119,13 @@ async def login(
     return SLoginOut.from_entity(user)
 
 
+@user_router.post("/logout/", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(response: Response):
+    """User logout."""
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+
+
 @user_router.post(
     "/{user_oid}/verify/",
     status_code=status.HTTP_204_NO_CONTENT,

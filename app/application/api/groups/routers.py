@@ -25,6 +25,7 @@ from logic.queries.groups import (
     GetGroupQuery,
     GetGroupsQuery,
 )
+from fastapi_cache.decorator import cache
 from logic.queries.users import GetUsersQuery
 
 group_router = APIRouter()
@@ -88,13 +89,13 @@ async def get_group(
         status.HTTP_400_BAD_REQUEST: {"model": SErrorMessage},
     },
 )
+@cache(expire=5)
 async def get_groups(
     container: Annotated[Container, Depends(init_container)],
     filters: GetGroupsFilters = Depends(),
 ):
     """Get all groups."""
     mediator: Mediator = container.resolve(Mediator)
-
     try:
         groups, count = await mediator.handle_query(
             GetGroupsQuery(filters=filters.to_infrastructure_filters())
@@ -119,6 +120,7 @@ async def get_groups(
         status.HTTP_404_NOT_FOUND: {"model": GroupNotFoundException},
     },
 )
+@cache(expire=60)
 async def get_users(
     group_oid: str,
     container: Annotated[Container, Depends(init_container)],

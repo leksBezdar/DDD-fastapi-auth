@@ -1,12 +1,13 @@
 from functools import cached_property
 
-from aioredis import Redis
+from redis import Redis
 
 from infrastructure.cache.base import AbstractCacheService
 from logic.init import init_container
 from settings.config import Settings
 
 
+# TODO replace fastapi-cache with own cache decorator
 class RedisCacheService(AbstractCacheService):
     @cached_property
     def client(self):
