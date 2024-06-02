@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+import bcrypt
+
 from domain.entities.users import User, VerificationToken
 from domain.values.users import Email, Password, Username
 from infrastructure.repositories.users.base import (
@@ -36,7 +38,7 @@ class UserLoginCommandHandler(CommandHandler[UserLoginCommand, User]):
             username=command.username
         )
         if user and await self.user_repository.check_password_is_valid(
-            password=command.password, hashed_password=user.password
+            password=command.password, hashed_password=user.password.as_generic_type()
         ):
             return user
 
@@ -136,10 +138,14 @@ class CreateUserCommandHandler(CommandHandler[CreateUserCommand, User]):
         ):
             raise UserAlreadyExistsException()
 
+        hashed_password = bcrypt.hashpw(
+            command.password.encode("utf-8"), bcrypt.gensalt()
+        ).decode("utf-8")
+
         new_user = await User.create(
             username=Username(value=command.username),
             email=Email(value=command.email),
-            password=Password(value=command.password).as_hash(),
+            password=Password(hashed_password),
             group_id=command.group_oid,
         )
 

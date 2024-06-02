@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 import re
-from typing import Self
-import bcrypt
 
 from domain.exceptions.users import (
     EmptyEmail,
@@ -57,14 +55,8 @@ class Password(BaseValueObject):
 
         value_length = len(self.value)
 
-        if value_length not in range(3, 16):
+        if value_length not in range(3, 100):
             raise InvalidPasswordLength(value_length)
 
     def as_generic_type(self):
         return str(self.value)
-
-    def as_hash(self) -> Self:
-        self.value = bcrypt.hashpw(self.value.encode("utf-8"), bcrypt.gensalt()).decode(
-            "utf-8"
-        )
-        return self

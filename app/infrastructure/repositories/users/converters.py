@@ -1,6 +1,6 @@
 from typing import Any, Mapping
 from domain.entities.users import User, VerificationToken
-from domain.values.users import Email, Username
+from domain.values.users import Email, Password, Username
 
 
 def convert_user_entity_to_document(user: User) -> dict:
@@ -40,7 +40,7 @@ def convert_user_document_to_entity(user_document: Mapping[str, Any]) -> User:
         oid=user_document["oid"],
         email=Email(value=user_document["email"]),
         username=Username(value=user_document["username"]),
-        password=user_document["password"],
+        password=Password(value=user_document["password"]),
         created_at=user_document["created_at"],
         group_id=user_document["group_oid"],
         is_verified=user_document["is_verified"],
